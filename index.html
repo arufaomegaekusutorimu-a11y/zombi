@@ -152,9 +152,7 @@
         <div id="high-level-display">HIGHEST LEVEL: 1</div>
         <div id="title-coin-display" style="font-size: 22px; margin-bottom: 10px; color: #00ff00; text-shadow: 0 0 10px rgba(0,255,0,0.5);">Z-COINS: 0</div>
         <button class="menu-btn" id="start-new-game">NEW GAME</button>
-        <button class="menu-btn" id="load-game" disabled>CONTINUE</button>
         <button class="menu-btn" id="open-settings" style="border-color:#88aaff; color:#88aaff;">⚙ SETTINGS</button>
-        <button class="menu-btn" id="open-skill-shop" style="border-color:#88ff88; color:#88ff88;">⚡ SKILL SHOP</button>
         <button class="menu-btn" id="open-gacha" style="border-color:#ffcc00; color:#ffcc00;">SKIN GACHA</button>
         <button class="menu-btn" id="open-skin-menu" style="border-color:#00ffff; color:#00ffff;">CHANGE SKIN</button>
     </div>
@@ -178,23 +176,14 @@
         </div>
     </div>
 
-    <!-- スキルショップUI -->
-    <div id="skill-shop-ui" style="display:none; position:absolute; width:100%; height:100%; background:radial-gradient(circle, #1a2a1a, #000); z-index:600; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:flex-start; padding:30px 20px; box-sizing:border-box; overflow-y:auto;">
-        <h2 style="font-size:36px; color:#88ff88; text-shadow:0 0 15px #44ff44; margin-bottom:5px;">⚡ SKILL SHOP</h2>
-        <p id="skill-shop-coins" style="font-size:20px; color:#00ff00; margin-bottom:20px;">Z-COINS: 0</p>
-        <div id="skill-list" style="width:600px; max-width:95vw; display:flex; flex-direction:column; gap:10px;"></div>
-        <button class="menu-btn" id="open-skill-set" style="margin-top:20px; border-color:#88ff88; color:#88ff88;">⚡ スキルセット</button>
-        <button class="menu-btn" id="close-skill-shop" style="margin-top:10px;">BACK</button>
-    </div>
 
-    <!-- スキルセット選択UI（タイトルから直接開く） -->
-    <div id="skill-select-ui" style="display:none; position:absolute; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1100; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:center;">
-        <h2 style="font-size:32px; color:#88ff88; margin-bottom:8px;">⚡ スキルセット</h2>
-        <p style="color:#aaa; margin-bottom:5px; font-size:14px;">セットするスキルを1つ選んでください</p>
-        <p id="skill-active-display" style="color:#88ff88; font-size:14px; margin-bottom:20px;">現在: なし</p>
-        <div id="skill-select-list" style="display:flex; flex-direction:column; gap:10px; width:500px; max-width:90vw;"></div>
-        <button class="menu-btn" id="skill-select-none" style="margin-top:15px; border-color:#888; color:#888;">スキルなし（解除）</button>
-        <button class="menu-btn" id="close-skill-select" style="margin-top:10px;">BACK</button>
+
+    <!-- ゲーム開始前スキル選択UI -->
+    <div id="skill-select-ui" style="display:none; position:absolute; width:100%; height:100%; background:radial-gradient(circle, #1a1a2a, #000); z-index:1100; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:center;">
+        <h2 style="font-size:36px; color:#88ff88; text-shadow:0 0 15px #44ff44; margin-bottom:6px;">⚡ SKILL SELECT</h2>
+        <p style="color:#aaa; margin-bottom:24px; font-size:15px;">1つのスキルを選んでゲームを開始してください</p>
+        <div id="skill-select-list" style="display:flex; flex-direction:column; gap:10px; width:560px; max-width:92vw;"></div>
+        <button class="menu-btn" id="skill-select-none" style="margin-top:18px; border-color:#888; color:#888;">スキルなし（スキップ）</button>
     </div>
 
     <div id="gacha-ui">
@@ -253,8 +242,6 @@
 
             <button class="shop-btn" id="buy-ammo">Buy Ammo +3 ($100)</button>
             <button class="shop-btn" id="buy-time">Buy Time +5s ($100)</button>
-            <button class="shop-btn" id="save-quit" style="background: #4444aa;">SAVE AND QUIT</button>
-            
             <div id="shop-money-display">Balance: $0</div>
 
             <button class="shop-btn" id="exit-shop" style="background: #aa0000; border-color: #fff; margin-top: 20px;">START NEXT LEVEL</button>
@@ -360,7 +347,6 @@
         let playerHP = 50, score = 0, zombieCoins = 0, level = 1, totalAmmo = 18, hasFirstAidKit = false, timeLeft = 90, currentAmmo = 6;
         let ownedSkins = [];
         let equippedSkins = { pistol: null, knife: null, compass: null };
-        let ownedSkills = [];
         let activeSkill = null;
         const savedDataStr = localStorage.getItem('infiniteTowerSave');
         if (savedDataStr) {
@@ -368,14 +354,13 @@
             zombieCoins = data.zombieCoins || 0;
             ownedSkins = data.ownedSkins || [];
             equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
-            ownedSkills = data.ownedSkills || [];
         }
         document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
 
         function saveGameData() {
             const saveData = {
                 playerHP, score, zombieCoins, level, totalAmmo, hasFirstAidKit, timeLeft, currentAmmo,
-                ownedSkins, equippedSkins, ownedSkills, activeSkill,
+                ownedSkins, equippedSkins, activeSkill,
                 zombiesKilledInLevel, inGame: true
             };
             localStorage.setItem('infiniteTowerSave', JSON.stringify(saveData));
@@ -387,7 +372,6 @@
             base.zombieCoins = zombieCoins;
             base.ownedSkins = ownedSkins;
             base.equippedSkins = equippedSkins;
-            base.ownedSkills = ownedSkills;
             base.activeSkill = activeSkill;
             localStorage.setItem('infiniteTowerSave', JSON.stringify(base));
         }
@@ -1341,88 +1325,19 @@
         };
 
         document.getElementById('exit-shop').onclick = () => { closeShop(); };
-        document.getElementById('save-quit').onclick = () => {
-            // inGame:true のままセーブ → リロード後CONTINUEで途中から再開できる
-            saveGameData();
-            location.reload();
-        };
-
         const startBtn = document.getElementById('start-new-game');
-        const loadBtn = document.getElementById('load-game');
         
         let highestLevel = localStorage.getItem('infiniteTowerHighLevel') || 1;
         document.getElementById('high-level-display').innerText = `HIGHEST LEVEL: ${highestLevel}`;
 
-        // セーブデータがあればCONTINUEを有効化
-        if(localStorage.getItem('infiniteTowerSave')) {
-            const _checkData = JSON.parse(localStorage.getItem('infiniteTowerSave'));
-            if (!_checkData.gameOver) {
-                loadBtn.disabled = false;
-            }
-        }
-
         startBtn.onclick = () => {
-            // 新規ゲーム開始時は古いセーブのinGameフラグをクリア
-            const raw = localStorage.getItem('infiniteTowerSave');
-            if (raw) {
-                const d = JSON.parse(raw);
-                d.inGame = false;
-                localStorage.setItem('infiniteTowerSave', JSON.stringify(d));
-            }
-            isTitleActive = false;
-            zombiesSpawned = false;
+            // スキル選択画面を開く
+            activeSkill = null;
             document.getElementById('title-screen').style.display = 'none';
-            applyPassiveSkills();
-            updateHPUI();
-            updateUI();
+            openSkillSelectForNewGame();
         };
 
-        loadBtn.onclick = () => {
-            const data = JSON.parse(localStorage.getItem('infiniteTowerSave'));
-            playerHP = data.playerHP || 50;
-            score = data.score || 0;
-            zombieCoins = data.zombieCoins || 0;
-            level = data.level || 1;
-            totalAmmo = data.totalAmmo || 18;
-            hasFirstAidKit = data.hasFirstAidKit || false;
-            timeLeft = data.timeLeft || 90;
-            currentAmmo = data.currentAmmo || 6;
-            zombiesKilledInLevel = data.zombiesKilledInLevel || 0;
-            ownedSkins = data.ownedSkins || [];
-            equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
-            ownedSkills = data.ownedSkills || [];
-            activeSkill = data.activeSkill || null;
-            
-            tryApplyEquippedSkins();
-            _prevHasTough = false; // リセットしてapplyPassiveSkillsで正しく処理させる
-            applyPassiveSkills();
 
-            isTitleActive = false;
-            document.getElementById('title-screen').style.display = 'none';
-            document.getElementById('level-display').innerText = `LEVEL: ${level}`;
-            document.getElementById('coin-display').innerText = `Z-COINS: ${zombieCoins}`;
-            document.getElementById('score-display').innerText = `$: ${score}`;
-            updateZombieCounter();
-            
-            if(hasFirstAidKit) {
-                const slot = document.getElementById('kit-slot'); slot.innerText = ""; slot.classList.add('filled');
-            }
-            updateHPUI(); updateUI();
-
-            // inGame:true のセーブ（途中セーブ）の場合はそのままゲームへ、
-            // それ以外（ショップ経由セーブ）はショップを開く
-            if (data.inGame) {
-                // 途中再開：ゾンビをスポーンしてゲーム画面へ直接
-                zombies.forEach(z => zombieGroup.remove(z.group));
-                zombies.length = 0;
-                for(let i=0; i<ZOMBIES_PER_LEVEL; i++) zombies.push(new Zombie());
-                zombiesSpawned = true;
-            } else {
-                // ショップからのコンティニュー
-                zombiesSpawned = false;
-                openShop();
-            }
-        };
 
         document.getElementById('open-gacha').onclick = () => {
             document.getElementById('title-screen').style.display = 'none';
@@ -1438,49 +1353,45 @@
             isGachaOpen = false;
         };
 
-        function renderSkillShop() {
-            document.getElementById('skill-shop-coins').innerText = `Z-COINS: ${zombieCoins}`;
-            const listDiv = document.getElementById('skill-list');
+        // ゲーム開始前スキル選択を開く
+        function openSkillSelectForNewGame() {
+            const ui = document.getElementById('skill-select-ui');
+            ui.style.display = 'flex';
+            const listDiv = document.getElementById('skill-select-list');
             listDiv.innerHTML = '';
             SKILLS.forEach(skill => {
-                const owned = ownedSkills.includes(skill.id);
-                const canAfford = zombieCoins >= skill.cost;
                 const div = document.createElement('div');
-                div.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-radius:10px; border:2px solid ${owned ? '#44aa44' : '#555'}; background:${owned ? 'rgba(0,180,0,0.15)' : 'rgba(255,255,255,0.05)'};`;
+                div.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-radius:10px; border:2px solid #555; background:rgba(255,255,255,0.05); cursor:pointer; transition:0.15s;`;
                 div.innerHTML = `
                     <div style="flex:1;">
-                        <div style="font-size:18px; font-weight:bold; color:${owned ? '#88ff88' : '#fff'};">${skill.icon} ${skill.name} ${owned ? '<span style="color:#44ff44; font-size:13px;">✔ 所持済み</span>' : ''}</div>
+                        <div style="font-size:18px; font-weight:bold; color:#fff;">${skill.icon} ${skill.name}</div>
                         <div style="font-size:13px; color:#aaa; margin-top:4px;">${skill.desc}</div>
                     </div>
-                    <button style="min-width:120px; padding:10px 14px; margin-left:16px; font-size:14px; font-weight:bold; background:${owned ? '#333' : (canAfford ? '#224422' : '#332222')}; color:${owned ? '#555' : (canAfford ? '#88ff88' : '#ff6666')}; border:2px solid ${owned ? '#444' : (canAfford ? '#44aa44' : '#aa4444')}; border-radius:6px; cursor:${owned ? 'default' : 'pointer'};" ${owned ? 'disabled' : ''} data-skill="${skill.id}">
-                        ${owned ? '購入済み' : `${skill.cost} Z-COINS`}
-                    </button>`;
-                if (!owned) {
-                    div.querySelector('button').onclick = () => {
-                        if (zombieCoins >= skill.cost) {
-                            zombieCoins -= skill.cost;
-                            ownedSkills.push(skill.id);
-                            saveCoinAndSkinData();
-                            applyPassiveSkills();
-                            renderSkillShop();
-                            document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
-                        }
-                    };
-                }
+                    <button style="min-width:100px; padding:10px 14px; margin-left:16px; font-size:14px; font-weight:bold; background:#224422; color:#88ff88; border:2px solid #44aa44; border-radius:6px; cursor:pointer;">SELECT</button>`;
+                div.querySelector('button').onclick = () => {
+                    activeSkill = skill.id;
+                    startNewGame();
+                };
                 listDiv.appendChild(div);
             });
         }
 
-        document.getElementById('open-skill-shop').onclick = () => {
-            document.getElementById('title-screen').style.display = 'none';
-            document.getElementById('skill-shop-ui').style.display = 'flex';
-            renderSkillShop();
-        };
-        document.getElementById('close-skill-shop').onclick = () => {
-            document.getElementById('skill-shop-ui').style.display = 'none';
-            document.getElementById('title-screen').style.display = 'flex';
-            document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
-        };
+        function startNewGame() {
+            // セーブデータのinGameフラグをクリア
+            const raw = localStorage.getItem('infiniteTowerSave');
+            if (raw) {
+                const d = JSON.parse(raw);
+                d.inGame = false;
+                localStorage.setItem('infiniteTowerSave', JSON.stringify(d));
+            }
+            document.getElementById('skill-select-ui').style.display = 'none';
+            isTitleActive = false;
+            zombiesSpawned = false;
+            _prevHasTough = false;
+            applyPassiveSkills();
+            updateHPUI();
+            updateUI();
+        }
 
         const BASE_MAX_HP = 50;
         const BASE_HP_SEGMENTS = 5;
@@ -1535,42 +1446,10 @@
             }
         }
 
-        function openSkillSelect() {
-            if (ownedSkills.length === 0) {
-                alert('スキルを所持していません。\nまずスキルショップでスキルを購入してください。');
-                return;
-            }
-            const ui = document.getElementById('skill-select-ui');
-            ui.style.display = 'flex';
-            document.getElementById('skill-active-display').innerText =
-                activeSkill ? `現在のセット: ${SKILLS.find(s => s.id === activeSkill)?.name || 'なし'}` : '現在のセット: なし';
-            const listDiv = document.getElementById('skill-select-list');
-            listDiv.innerHTML = '';
-            ownedSkills.forEach(sid => {
-                const skill = SKILLS.find(s => s.id === sid);
-                if (!skill) return;
-                const isActive = activeSkill === sid;
-                const btn = document.createElement('button');
-                btn.className = 'menu-btn';
-                btn.style.cssText = `width:100%; font-size:15px; text-align:left; padding:14px 18px; ${isActive ? 'border-color:#88ff88; color:#88ff88; background:#224422;' : ''}`;
-                btn.innerHTML = `${skill.icon} <b>${skill.name}</b>${isActive ? ' ✔ セット中' : ''} <span style="font-size:12px; color:#aaa; margin-left:8px;">${skill.desc}</span>`;
-                btn.onclick = () => {
-                    activeSkill = sid;
-                    saveCoinAndSkinData();
-                    openSkillSelect();
-                };
-                listDiv.appendChild(btn);
-            });
-        }
-
-        document.getElementById('open-skill-set').onclick = () => { openSkillSelect(); };
+        // スキルなしでゲーム開始
         document.getElementById('skill-select-none').onclick = () => {
             activeSkill = null;
-            saveCoinAndSkinData();
-            openSkillSelect();
-        };
-        document.getElementById('close-skill-select').onclick = () => {
-            document.getElementById('skill-select-ui').style.display = 'none';
+            startNewGame();
         };
 
         document.getElementById('roll-gacha').onclick = () => {
@@ -2018,4 +1897,6 @@
     </script>
 </body>
 </html>
+
+
 
