@@ -66,7 +66,7 @@
             border: 4px solid #ffcc00; z-index: 40;
             border-radius: 10px;
             transform: translate(-50%, 50%);
-            display: none; /* コンパス使用時のみ表示 */
+            display: none; 
         }
         
         #shop-ui {
@@ -98,14 +98,68 @@
             font-size: 24px; color: #00ff00; font-weight: bold; margin: 15px 0;
             text-shadow: 0 0 10px rgba(0,255,0,0.5);
         }
+
+        /* スキン関連UIスタイル */
+        #gacha-ui {
+            display: none; position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            z-index: 1000; color: white; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif;
+        }
+        #skin-ui {
+            display: none; position: absolute; width: 100%; height: 100%; z-index: 900;
+            background: radial-gradient(circle, #444, #000);
+            color: white; font-family: sans-serif; flex-direction: row;
+        }
+        .legend-text { background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); -webkit-background-clip: text; color: transparent; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="title-screen">
         <h1>INFINITE TOWER</h1>
         <div id="high-level-display">HIGHEST LEVEL: 1</div>
+        <div id="title-coin-display" style="font-size: 22px; margin-bottom: 10px; color: #00ff00; text-shadow: 0 0 10px rgba(0,255,0,0.5);">Z-COINS: 0</div>
+        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <label style="font-size:16px; color:#aaa;">NAME:</label>
+            <input id="username-input" type="text" maxlength="12" placeholder="プレイヤー名" style="padding:8px 12px; font-size:16px; background:#222; color:white; border:2px solid #aaa; border-radius:4px; width:160px; outline:none;" />
+        </div>
         <button class="menu-btn" id="start-new-game">NEW GAME</button>
         <button class="menu-btn" id="load-game" disabled>CONTINUE</button>
+        <button class="menu-btn" id="open-gacha" style="border-color:#ffcc00; color:#ffcc00;">SKIN GACHA</button>
+        <button class="menu-btn" id="open-skin-menu" style="border-color:#00ffff; color:#00ffff;">CHANGE SKIN</button>
+        <button class="menu-btn" id="open-ranking" style="border-color:#ff88ff; color:#ff88ff;">&#127942; RANKING</button>
+    </div>
+
+    <!-- ランキング画面 -->
+    <div id="ranking-ui" style="display:none; position:absolute; width:100%; height:100%; background:radial-gradient(circle, #444, #000); z-index:600; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:30px; box-sizing:border-box; overflow-y:auto;">
+        <h2 style="font-size:36px; color:#ff88ff; text-shadow:0 0 15px #ff44ff; margin-bottom:5px;">&#127942; GLOBAL RANKING</h2>
+        <p style="color:#aaa; margin-bottom:20px; font-size:14px;">TOP 100 - 最高到達レベル</p>
+        <div id="ranking-list" style="width:500px; max-width:95vw;"></div>
+        <button class="menu-btn" id="close-ranking" style="margin-top:25px; margin-bottom:30px;">BACK</button>
+    </div>
+
+    <div id="gacha-ui">
+       <h2 style="font-size: 40px; color: #ffcc00;">WEAPON SKIN GACHA</h2>
+       <p id="gacha-coins" style="font-size: 24px; color: #00ff00;">Z-COINS: 0</p>
+       <button id="roll-gacha" class="menu-btn" style="background: #442200;">ROLL (50 Z-COINS)</button>
+       <button id="close-gacha" class="menu-btn">BACK</button>
+       <div id="gacha-result" style="margin-top: 30px; font-size: 32px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.5); height: 80px;"></div>
+    </div>
+
+    <div id="skin-ui">
+       <div style="width: 350px; background: #222; padding: 20px; overflow-y: auto; border-right: 2px solid #fff; box-sizing: border-box; height: 100%;">
+          <h3 style="color:#00ffff;">WEAPON</h3>
+          <select id="skin-weapon-select" style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 18px; background: #000; color: white; border: 1px solid #00ffff;">
+              <option value="pistol">Pistol</option>
+              <option value="knife">Knife</option>
+              <option value="compass">Compass</option>
+          </select>
+          <h3 style="color:#00ffff;">SKINS</h3>
+          <div id="skin-list" style="display: flex; flex-direction: column; gap: 5px;"></div>
+       </div>
+       <div style="flex: 1; position: relative;">
+          <button id="equip-skin" class="menu-btn" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background:#004400;">EQUIP</button>
+          <button id="close-skin-menu" class="menu-btn" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);">BACK</button>
+          <div id="skin-preview-info" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 30px; font-weight: bold; text-shadow: 2px 2px 4px #000;"></div>
+       </div>
     </div>
 
     <div id="damage-overlay"></div>
@@ -115,12 +169,11 @@
         <div id="hp-container">
             <div class="hp-segment"></div><div class="hp-segment"></div>
             <div class="hp-segment"></div><div class="hp-segment"></div>
-            <div class="hp-segment"></div><div class="hp-segment"></div>
-            <div class="hp-segment"></div><div class="hp-segment"></div>
-            <div class="hp-segment"></div><div class="hp-segment"></div>
+            <div class="hp-segment"></div>
         </div>
         <div id="zombie-counter" style="margin-top:10px; font-size: 20px; color: #ff4444;">ZOMBIES: 0 / 10</div>
         <div id="score-display" style="margin-top:10px; font-size: 20px;">$: 0</div>
+        <div id="coin-display" style="margin-top:5px; font-size: 20px; color: #00ff00;">Z-COINS: 0</div>
         <div id="level-display" style="margin-top:5px; font-size: 18px;">LEVEL: 1</div>
         <div id="timer-display" style="margin-top:5px; font-size: 22px; color: #ffcc00;">TIME: 01:30</div>
     </div>
@@ -175,34 +228,90 @@
         import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
+        // --- スキンデータ生成 (全50パターン) ---
+        const SKINS = [];
+        let skinIdCounter = 1;
+        const generateSkinsForWeapon = (type, normalCnt, rareCnt, epicCnt, legendCnt) => {
+            const colorsNormal = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffaa00, 0xffffff, 0x888888];
+            const colorsEpic = [0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0x00ffff];
+            for(let i=0; i<normalCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Normal', color: colorsNormal[i%colorsNormal.length], metalness: 0, roughness: 0.8 });
+            for(let i=0; i<rareCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Rare', color: colorsNormal[i%colorsNormal.length], metalness: 1.0, roughness: 0.2 });
+            for(let i=0; i<epicCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Epic', color: 0x222222, metalness: 0.2, roughness: 0.8, emissive: true, emissiveColor: colorsEpic[i%colorsEpic.length], emissiveIntensity: 2.0 });
+            for(let i=0; i<legendCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Legend', color: 0xffffff, metalness: 1.0, roughness: 0.1, emissive: true, emissiveColor: 0xffffff, emissiveIntensity: 1.0, isRainbow: true });
+        };
+        // 17 + 17 + 16 = 50パターン
+        generateSkinsForWeapon('pistol', 8, 5, 3, 1);
+        generateSkinsForWeapon('knife', 8, 5, 3, 1);
+        generateSkinsForWeapon('compass', 7, 5, 3, 1);
+
+        const getSkinById = (id) => SKINS.find(s => s.id === id) || null;
+
+        // --- セーブデータの初期読み込み ---
+        let playerHP = 50, score = 0, zombieCoins = 0, level = 1, totalAmmo = 18, hasFirstAidKit = false, timeLeft = 90, currentAmmo = 6;
+        let ownedSkins = [];
+        let equippedSkins = { pistol: null, knife: null, compass: null };
+        const savedDataStr = localStorage.getItem('infiniteTowerSave');
+        if (savedDataStr) {
+            const data = JSON.parse(savedDataStr);
+            zombieCoins = data.zombieCoins || 0;
+            ownedSkins = data.ownedSkins || [];
+            equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
+        }
+        // タイトル画面のZコイン表示を初期化
+        document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
+
+        function saveGameData() {
+            const saveData = {
+                playerHP, score, zombieCoins, level, totalAmmo, hasFirstAidKit, timeLeft, currentAmmo,
+                ownedSkins, equippedSkins
+            };
+            localStorage.setItem('infiniteTowerSave', JSON.stringify(saveData));
+        }
+
+        // ガチャ・スキン変更時専用：コインとスキンデータのみ保存（ゲーム変数を上書きしない）
+        function saveCoinAndSkinData() {
+            const existing = localStorage.getItem('infiniteTowerSave');
+            const base = existing ? JSON.parse(existing) : {};
+            base.zombieCoins = zombieCoins;
+            base.ownedSkins = ownedSkins;
+            base.equippedSkins = equippedSkins;
+            localStorage.setItem('infiniteTowerSave', JSON.stringify(base));
+        }
+
         const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x87CEEB, 1, 60);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        scene.fog = new THREE.Fog(0x87CEEB, 5, 80);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = false;
         document.body.appendChild(renderer.domElement);
 
-        let playerHP = 100;
-        let score = 0;
-        let level = 1;
-        let totalAmmo = 18; 
-        let hasFirstAidKit = false;
+        // --- スキンプレビュー用のシーン ---
+        const skinScene = new THREE.Scene();
+        skinScene.background = new THREE.Color(0x333333);
+        const skinCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+        skinCamera.position.set(0, 0, 8);
+        skinCamera.lookAt(0, 0, 0);
+        const skinLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        skinLight.position.set(5, 5, 5);
+        const skinLight2 = new THREE.DirectionalLight(0xffffff, 1.0);
+        skinLight2.position.set(-5, -2, 3);
+        skinScene.add(skinLight, skinLight2, new THREE.AmbientLight(0xffffff, 1.2));
+        const previewModels = { pistol: new THREE.Group(), knife: new THREE.Group(), compass: new THREE.Group() };
+        skinScene.add(previewModels.pistol, previewModels.knife, previewModels.compass);
+
         let isGameOver = false;
         let isShopOpen = false; 
         let isTitleActive = true;
+        let isGachaOpen = false;
+        let isSkinMenuOpen = false;
         let shopTimeLeft = 0;
-        let timeLeft = 90;
         let walkTime = 0;
         let damageFlash = 0;
         let healFlash = 0;
         let shakeIntensity = 0;
         let zombiesKilledInLevel = 0;
         const ZOMBIES_PER_LEVEL = 10;
-
-        // パフォーマンス向上のための定数・再利用オブジェクト
-        const _v1 = new THREE.Vector3();
-        const _v2 = new THREE.Vector3();
 
         const shotLines = [];
         const particles = [];
@@ -329,8 +438,7 @@
         scene.add(ground);
 
         function checkCollision(pos, radius = 0.35) {
-            for (let i = 0; i < walls.length; i++) {
-                const wall = walls[i];
+            for (let wall of walls) {
                 const dx = Math.abs(pos.x - wall.position.x);
                 const dz = Math.abs(pos.z - wall.position.z);
                 if (dx < (wallUnit/2) + radius && dz < (wallUnit/2) + radius) return true;
@@ -338,16 +446,11 @@
             return false;
         }
 
-        // プレイヤーとゾンビの押し戻し判定 (最適化済み)
         function checkPlayerZombieCollision(pos, radius = 0.5) {
-            for (let i = 0; i < zombies.length; i++) {
-                const z = zombies[i];
+            for (let z of zombies) {
                 if (z.isDead) continue;
-                // new Vector3生成を避け、直接座標計算
-                const dx = pos.x - z.group.position.x;
-                const dz = pos.z - z.group.position.z;
-                const distSq = dx * dx + dz * dz;
-                if (distSq < radius * radius) return true;
+                const dist = pos.distanceTo(new THREE.Vector3(z.group.position.x, pos.y, z.group.position.z));
+                if (dist < radius) return true;
             }
             return false;
         }
@@ -470,15 +573,21 @@
                 zombieGroup.add(this.group);
             }
             update(playerPos) {
-                if (this.isDead || isShopOpen || isTitleActive) return; 
-                const dist = this.group.position.distanceTo(playerPos);
-                
-                // Raycasterを再利用
-                _v1.copy(this.group.position).y += 1.2;
-                _v2.copy(playerPos).sub(this.group.position).normalize();
-                const rayToPlayer = new THREE.Raycaster(_v1, _v2);
-                const intersects = rayToPlayer.intersectObjects(walls);
-                const canSeePlayer = intersects.length === 0 || intersects[0].distance > dist;
+                if (this.isDead || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return; 
+                const dist = this.group.position.distanceTo(new THREE.Vector3(playerPos.x, 0, playerPos.z));
+                // raycastは近距離のみ実行して処理を軽量化
+                let canSeePlayer = false;
+                if (dist < 12) {
+                    this._rayCooldown = (this._rayCooldown || 0) - 1;
+                    if (this._rayCooldown <= 0) {
+                        this._rayCooldown = 3; // 3フレームに1回raycast
+                        const dir = new THREE.Vector3(playerPos.x - this.group.position.x, 0, playerPos.z - this.group.position.z).normalize();
+                        const rayToPlayer = new THREE.Raycaster(this.group.position.clone().add(new THREE.Vector3(0,1.2,0)), dir);
+                        const intersects = rayToPlayer.intersectObjects(walls);
+                        this._lastCanSee = intersects.length === 0 || intersects[0].distance > dist;
+                    }
+                    canSeePlayer = this._lastCanSee || false;
+                }
                 
                 if (dist < 12 && canSeePlayer) {
                     this.state = 'chase';
@@ -494,20 +603,20 @@
                 }
 
                 if (dist > 1.2) {
-                    const dir = _v1.set(0, 0, 1).applyQuaternion(this.group.quaternion).multiplyScalar(this.speed);
+                    const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(this.group.quaternion).multiplyScalar(this.speed);
                     const prevX = this.group.position.x, prevZ = this.group.position.z;
                     
                     this.group.position.x += dir.x;
-                    const dx = this.group.position.x - playerPos.x;
-                    const dz = this.group.position.z - playerPos.z;
-                    if (checkCollision(this.group.position, 0.4) || this.checkZombieOverlap() || (dx*dx + dz*dz) < 0.36) {
+                    const nextPosForZ = new THREE.Vector3(this.group.position.x, 0, this.group.position.z);
+                    const distToPlayerNext = nextPosForZ.distanceTo(new THREE.Vector3(playerPos.x, 0, playerPos.z));
+                    if (checkCollision(this.group.position, 0.4) || this.checkZombieOverlap() || distToPlayerNext < 0.6) {
                         this.group.position.x = prevX;
                         if(this.state === 'wander') this.wanderAngle += Math.PI * 0.5;
                     }
                     this.group.position.z += dir.z;
-                    const dx2 = this.group.position.x - playerPos.x;
-                    const dz2 = this.group.position.z - playerPos.z;
-                    if (checkCollision(this.group.position, 0.4) || this.checkZombieOverlap() || (dx2*dx2 + dz2*dz2) < 0.36) {
+                    const nextPosForZ2 = new THREE.Vector3(this.group.position.x, 0, this.group.position.z);
+                    const distToPlayerNext2 = nextPosForZ2.distanceTo(new THREE.Vector3(playerPos.x, 0, playerPos.z));
+                    if (checkCollision(this.group.position, 0.4) || this.checkZombieOverlap() || distToPlayerNext2 < 0.6) {
                         this.group.position.z = prevZ;
                         if(this.state === 'wander') this.wanderAngle += Math.PI * 0.5;
                     }
@@ -529,8 +638,7 @@
                 }
             }
             checkZombieOverlap() {
-                for (let i = 0; i < zombies.length; i++) {
-                    const other = zombies[i];
+                for (let other of zombies) {
                     if (other === this || other.isDead) continue;
                     if (this.group.position.distanceTo(other.group.position) < 0.85) return true;
                 }
@@ -547,10 +655,15 @@
                 if (this.hp <= 0) this.die();
             }
             die() {
-                this.isDead = true; score += 100;
+                this.isDead = true; 
+                score += 100;
+                const droppedCoins = Math.floor(Math.random() * 10) + 1;
+                zombieCoins += droppedCoins;
                 zombiesKilledInLevel++;
                 updateZombieCounter();
                 document.getElementById('score-display').innerText = `$: ${score}`;
+                document.getElementById('coin-display').innerText = `Z-COINS: ${zombieCoins}`;
+                saveGameData(); // コイン増減をセーブ
                 this.group.rotation.x = -Math.PI / 2;
                 this.group.position.y = 0.1;
                 setTimeout(() => { 
@@ -578,9 +691,56 @@
         let knifeSwingTimer = 0;
         let isCompassActive = false;
 
+        // --- スキン適用関数 ---
+        function applySkin(modelGroup, skinData) {
+            modelGroup.traverse(child => {
+                if (child.isMesh && child.name !== "Hand") {
+                    // 元のマテリアルを保存（MeshStandardMaterialとして）
+                    if (!child.userData.originalStdMaterial) {
+                        // FBXのマテリアル（MeshPhong等）をMeshStandardMaterialに変換して保存
+                        const stdMat = new THREE.MeshStandardMaterial();
+                        const src = Array.isArray(child.material) ? child.material[0] : child.material;
+                        if (src) {
+                            if (src.color) stdMat.color.copy(src.color);
+                            if (src.map) stdMat.map = src.map;
+                        }
+                        stdMat.metalness = 0.1;
+                        stdMat.roughness = 0.7;
+                        child.userData.originalStdMaterial = stdMat;
+                    }
+                    const origMat = child.userData.originalStdMaterial;
+                    if (!skinData) {
+                        child.material = origMat.clone();
+                        child.userData.isLegendary = false;
+                    } else {
+                        const mat = new THREE.MeshStandardMaterial();
+                        mat.color.setHex(skinData.color);
+                        mat.metalness = skinData.metalness;
+                        mat.roughness = skinData.roughness;
+                        if (skinData.emissive) {
+                            mat.emissive = new THREE.Color(skinData.emissiveColor);
+                            mat.emissiveIntensity = skinData.emissiveIntensity;
+                        } else {
+                            mat.emissive = new THREE.Color(0x000000);
+                            mat.emissiveIntensity = 0;
+                        }
+                        child.material = mat;
+                        child.userData.isLegendary = skinData.isRainbow || false;
+                    }
+                }
+            });
+        }
+
+        let modelsLoaded = { pistol: false, knife: false, compass: false };
+        function tryApplyEquippedSkins() {
+            if (modelsLoaded.pistol) applySkin(pistolGroup, getSkinById(equippedSkins.pistol));
+            if (modelsLoaded.knife) applySkin(knifeGroup, getSkinById(equippedSkins.knife));
+            if (modelsLoaded.compass) applySkin(compassGroup, getSkinById(equippedSkins.compass));
+        }
+
         const pMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
         const pHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.6), pMat);
-        pHand.position.set(0, -0.05, 0.2); pistolGroup.add(pHand);
+        pHand.position.set(0, -0.05, 0.2); pHand.name = "Hand"; pistolGroup.add(pHand);
         const muzzlePoint = new THREE.Object3D();
         muzzlePoint.position.set(0, 0.15, -0.45);
         pistolGroup.add(muzzlePoint);
@@ -589,21 +749,48 @@
             fbx.scale.set(0.004, 0.004, 0.004);
             fbx.rotation.y = Math.PI / 2; 
             pistolGroup.add(fbx);
+            
+            const pFbx = fbx.clone();
+            pFbx.scale.set(0.008, 0.008, 0.008);
+            pFbx.position.set(0, 0, 0);
+            pFbx.rotation.set(0, Math.PI / 2, 0);
+            previewModels.pistol.add(pFbx);
+            
+            modelsLoaded.pistol = true; tryApplyEquippedSkins();
+            applySkin(previewModels.pistol, getSkinById(equippedSkins.pistol));
         });
 
         const kHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.6), pMat);
-        kHand.position.set(0, -0.05, 0.2); knifeGroup.add(kHand);
+        kHand.position.set(0, -0.05, 0.2); kHand.name = "Hand"; knifeGroup.add(kHand);
         loader.load('Knife.fbx', (fbx) => {
             fbx.scale.set(0.005, 0.005, 0.005); fbx.rotation.set(0, -Math.PI / 2, 0); 
             fbx.position.set(0, -0.08, -0.15); knifeGroup.add(fbx);
+
+            const pFbx = fbx.clone();
+            pFbx.scale.set(0.01, 0.01, 0.01);
+            pFbx.position.set(0, 0, 0);
+            pFbx.rotation.set(0, Math.PI / 2, 0);
+            previewModels.knife.add(pFbx);
+            
+            modelsLoaded.knife = true; tryApplyEquippedSkins();
+            applySkin(previewModels.knife, getSkinById(equippedSkins.knife));
         });
 
         const cHand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.6), pMat);
-        cHand.position.set(0, -0.05, 0.2); compassGroup.add(cHand);
+        cHand.position.set(0, -0.05, 0.2); cHand.name = "Hand"; compassGroup.add(cHand);
         loader.load('Compass_Open.fbx', (fbx) => {
             fbx.scale.set(0.005, 0.005, 0.005);
             fbx.position.set(0, 0, -0.1);
             compassGroup.add(fbx);
+
+            const pFbx = fbx.clone();
+            pFbx.scale.set(0.01, 0.01, 0.01);
+            pFbx.position.set(0, 0, 0);
+            pFbx.rotation.set(0, 0, 0);
+            previewModels.compass.add(pFbx);
+            
+            modelsLoaded.compass = true; tryApplyEquippedSkins();
+            applySkin(previewModels.compass, getSkinById(equippedSkins.compass));
         });
 
         const normalPos = new THREE.Vector3(0.3, -0.3, -0.5);
@@ -613,7 +800,7 @@
         const compassNormalPos = new THREE.Vector3(-0.4, -0.3, -0.5);
         const compassHidePos = new THREE.Vector3(-0.4, -1.2, -0.3);
 
-        let isAds = false, isReloading = false, currentAmmo = 6;
+        let isAds = false, isReloading = false;
         const raycaster = new THREE.Raycaster();
         camera.position.set(- (mazeSize * wallUnit / 2) + wallUnit, 1.6, - (mazeSize * wallUnit / 2) + wallUnit);
 
@@ -622,10 +809,9 @@
 
         function checkHit(isKnife = false) {
             if (isKnife) {
-                for (let i = 0; i < zombies.length; i++) {
-                    const z = zombies[i];
+                zombies.forEach(z => {
                     if (camera.position.distanceTo(z.group.position) < 2.5 && !z.isDead) z.takeDamage(10); 
-                }
+                });
             } else {
                 raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
                 const startPos = new THREE.Vector3();
@@ -649,10 +835,10 @@
         }
 
         const controls = new PointerLockControls(camera, document.body);
-        document.body.addEventListener('click', () => { if(!isGameOver && !isShopOpen && !isTitleActive) controls.lock(); });
+        document.body.addEventListener('click', () => { if(!isGameOver && !isShopOpen && !isTitleActive && !isGachaOpen && !isSkinMenuOpen) controls.lock(); });
 
         window.addEventListener('mousedown', (e) => {
-            if (!controls.isLocked || isShopOpen || isTitleActive) return;
+            if (!controls.isLocked || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return;
             if (e.button === 0) {
                 if (currentWeapon === 'pistol' && !isReloading && currentAmmo > 0) {
                     currentAmmo--; updateUI();
@@ -669,7 +855,7 @@
         window.addEventListener('mouseup', (e) => { if (e.button === 2) isAds = false; });
 
         function switchWeapon() {
-            if (isReloading || isShopOpen || isTitleActive) return;
+            if (isReloading || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return;
             currentWeapon = (currentWeapon === 'pistol' ? 'knife' : 'pistol');
             if (currentWeapon === 'pistol') { if (weaponSwapGunSound.buffer) { weaponSwapGunSound.stop(); weaponSwapGunSound.play(); } }
             else { if (weaponSwapKnifeSound.buffer) { weaponSwapKnifeSound.stop(); weaponSwapKnifeSound.play(); } }
@@ -679,7 +865,7 @@
             if (e.code === 'KeyF') switchWeapon();
             if (e.code === 'KeyR' && currentWeapon === 'pistol') reload();
             if (e.code === 'KeyE') useFirstAidKit();
-            if (e.code === 'KeyQ' && !isGameOver && !isShopOpen && !isTitleActive) {
+            if (e.code === 'KeyQ' && !isGameOver && !isShopOpen && !isTitleActive && !isSkinMenuOpen && !isGachaOpen) {
                 if (!isCompassActive) {
                     isCompassActive = true;
                     document.getElementById('minimap').style.display = 'block';
@@ -708,7 +894,7 @@
         function updateHPUI() { 
             const segments = document.getElementsByClassName('hp-segment');
             const activeSegments = Math.ceil(playerHP / 10);
-            for(let i=0; i<10; i++) {
+            for(let i=0; i<5; i++) {
                 segments[i].classList.toggle('empty', i >= activeSegments);
             }
         }
@@ -728,8 +914,8 @@
         }
 
         function useFirstAidKit() {
-            if (hasFirstAidKit && playerHP < 100 && !isShopOpen) {
-                playerHP = Math.min(100, playerHP + 10); 
+            if (hasFirstAidKit && playerHP < 50 && !isShopOpen) {
+                playerHP = Math.min(50, playerHP + 10); 
                 hasFirstAidKit = false;
                 healFlash = 0.5;
                 if (healSound.buffer) { healSound.stop(); healSound.play(); }
@@ -751,23 +937,18 @@
 
         function updateMinimap() {
             if (!isCompassActive) return;
-            
             miniMapCtx.save();
             miniMapCtx.clearRect(0, 0, 300, 300);
-            
             const scale = 15;
             const center = 150;
             const offsetX = center - camera.position.x * scale;
             const offsetZ = center - camera.position.z * scale;
-            
             miniMapCtx.fillStyle = '#666';
-            for (let i = 0; i < walls.length; i++) {
-                const w = walls[i];
+            walls.forEach(w => {
                 const x = w.position.x * scale + offsetX;
                 const z = w.position.z * scale + offsetZ;
                 miniMapCtx.fillRect(x - (wallUnit/2)*scale, z - (wallUnit/2)*scale, wallUnit*scale, wallUnit*scale);
-            }
-
+            });
             miniMapCtx.fillStyle = '#ff0000';
             const gx = (mazeSize-2) * wallUnit - (mazeSize * wallUnit / 2);
             const gz = (mazeSize-2) * wallUnit - (mazeSize * wallUnit / 2);
@@ -775,12 +956,11 @@
             miniMapCtx.arc(gx * scale + offsetX, gz * scale + offsetZ, 8, 0, Math.PI * 2);
             miniMapCtx.fill();
             miniMapCtx.restore();
-            
             miniMapCtx.fillStyle = 'red';
             miniMapCtx.beginPath();
             miniMapCtx.arc(center, center, 5, 0, Math.PI * 2);
             miniMapCtx.fill();
-            const dir = _v1;
+            const dir = new THREE.Vector3();
             camera.getWorldDirection(dir);
             miniMapCtx.strokeStyle = 'red';
             miniMapCtx.lineWidth = 2;
@@ -845,15 +1025,9 @@
             }
         };
 
-        document.getElementById('exit-shop').onclick = () => {
-            closeShop();
-        };
-
+        document.getElementById('exit-shop').onclick = () => { closeShop(); };
         document.getElementById('save-quit').onclick = () => {
-            const saveData = {
-                playerHP, score, level, totalAmmo, hasFirstAidKit, timeLeft, currentAmmo
-            };
-            localStorage.setItem('infiniteTowerSave', JSON.stringify(saveData));
+            saveGameData();
             location.reload();
         };
 
@@ -863,8 +1037,86 @@
         let highestLevel = localStorage.getItem('infiniteTowerHighLevel') || 1;
         document.getElementById('high-level-display').innerText = `HIGHEST LEVEL: ${highestLevel}`;
 
+        // --- ユーザーネームの読み込み・保存 ---
+        const usernameInput = document.getElementById('username-input');
+        usernameInput.value = localStorage.getItem('infiniteTowerUsername') || '';
+        usernameInput.addEventListener('input', () => {
+            localStorage.setItem('infiniteTowerUsername', usernameInput.value.trim());
+        });
+        function getUsername() {
+            const n = (usernameInput.value || '').trim();
+            return n.length > 0 ? n : 'UNKNOWN';
+        }
+
+        // --- ランキング機能（共有ストレージ） ---
+        async function submitRanking(username, lv) {
+            try {
+                const key = `ranking:${username}`;
+                const existing = await window.storage.get(key, true).catch(() => null);
+                const prev = existing ? JSON.parse(existing.value) : null;
+                if (!prev || prev.level < lv) {
+                    await window.storage.set(key, JSON.stringify({ username, level: lv, ts: Date.now() }), true);
+                }
+            } catch(e) { console.warn('Ranking save failed', e); }
+        }
+
+        async function loadRanking() {
+            const listDiv = document.getElementById('ranking-list');
+            listDiv.innerHTML = '<p style="color:#aaa; text-align:center;">読み込み中...</p>';
+            try {
+                const result = await window.storage.list('ranking:', true);
+                if (!result || !result.keys || result.keys.length === 0) {
+                    listDiv.innerHTML = '<p style="color:#aaa; text-align:center;">まだランキングデータがありません</p>';
+                    return;
+                }
+                const entries = [];
+                for (const key of result.keys) {
+                    try {
+                        const r = await window.storage.get(key, true);
+                        if (r && r.value) entries.push(JSON.parse(r.value));
+                    } catch(e) {}
+                }
+                entries.sort((a, b) => b.level - a.level);
+                const top100 = entries.slice(0, 100);
+                const myName = getUsername();
+                let html = '';
+                top100.forEach((e, i) => {
+                    const rank = i + 1;
+                    let rankColor = '#fff';
+                    let bg = 'rgba(255,255,255,0.05)';
+                    if (rank === 1) { rankColor = '#ffd700'; bg = 'rgba(255,215,0,0.15)'; }
+                    else if (rank === 2) { rankColor = '#c0c0c0'; bg = 'rgba(192,192,192,0.12)'; }
+                    else if (rank === 3) { rankColor = '#cd7f32'; bg = 'rgba(205,127,50,0.12)'; }
+                    const isMe = e.username === myName;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px; margin-bottom:6px; background:${isMe ? 'rgba(0,255,100,0.18)' : bg}; border-radius:8px; border:${isMe ? '1px solid #00ff66' : '1px solid rgba(255,255,255,0.1)'}; font-size:16px;">
+                        <span style="color:${rankColor}; font-weight:bold; min-width:40px;">${medal}</span>
+                        <span style="flex:1; color:${isMe ? '#00ff88' : '#fff'}; font-weight:${isMe ? 'bold' : 'normal'};">${e.username}${isMe ? ' ◀ YOU' : ''}</span>
+                        <span style="color:#ffcc00; font-weight:bold;">Lv. ${e.level}</span>
+                    </div>`;
+                });
+                listDiv.innerHTML = html;
+            } catch(e) {
+                listDiv.innerHTML = '<p style="color:#f66; text-align:center;">ランキングの読み込みに失敗しました</p>';
+            }
+        }
+
+        document.getElementById('open-ranking').onclick = () => {
+            document.getElementById('title-screen').style.display = 'none';
+            const rankUi = document.getElementById('ranking-ui');
+            rankUi.style.display = 'flex';
+            loadRanking();
+        };
+        document.getElementById('close-ranking').onclick = () => {
+            document.getElementById('ranking-ui').style.display = 'none';
+            document.getElementById('title-screen').style.display = 'flex';
+        };
+
         if(localStorage.getItem('infiniteTowerSave')) {
-            loadBtn.disabled = false;
+            const _checkData = JSON.parse(localStorage.getItem('infiniteTowerSave'));
+            if (!_checkData.gameOver) {
+                loadBtn.disabled = false;
+            }
         }
 
         startBtn.onclick = () => {
@@ -876,24 +1128,187 @@
 
         loadBtn.onclick = () => {
             const data = JSON.parse(localStorage.getItem('infiniteTowerSave'));
-            playerHP = data.playerHP;
-            score = data.score;
-            level = data.level; 
-            totalAmmo = data.totalAmmo;
-            hasFirstAidKit = data.hasFirstAidKit;
-            timeLeft = data.timeLeft;
-            currentAmmo = data.currentAmmo;
+            playerHP = data.playerHP; score = data.score; zombieCoins = data.zombieCoins || 0;
+            level = data.level; totalAmmo = data.totalAmmo; hasFirstAidKit = data.hasFirstAidKit;
+            timeLeft = data.timeLeft; currentAmmo = data.currentAmmo;
+            ownedSkins = data.ownedSkins || []; equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
             
+            tryApplyEquippedSkins();
+
             isTitleActive = false;
             document.getElementById('title-screen').style.display = 'none';
             document.getElementById('level-display').innerText = `LEVEL: ${level}`;
+            document.getElementById('coin-display').innerText = `Z-COINS: ${zombieCoins}`;
             
             if(hasFirstAidKit) {
                 const slot = document.getElementById('kit-slot'); slot.innerText = ""; slot.classList.add('filled');
             }
-            updateHPUI();
-            updateUI();
-            openShop();
+            updateHPUI(); updateUI(); openShop();
+        };
+
+        // --- ガチャUI処理 ---
+        document.getElementById('open-gacha').onclick = () => {
+            document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('gacha-ui').style.display = 'flex';
+            document.getElementById('gacha-coins').innerText = `Z-COINS: ${zombieCoins}`;
+            document.getElementById('gacha-result').innerHTML = '';
+            isGachaOpen = true;
+        };
+        document.getElementById('close-gacha').onclick = () => {
+            document.getElementById('gacha-ui').style.display = 'none';
+            document.getElementById('title-screen').style.display = 'flex';
+            document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
+            isGachaOpen = false;
+        };
+
+        document.getElementById('roll-gacha').onclick = () => {
+            if (zombieCoins >= 50) {
+                zombieCoins -= 50;
+                document.getElementById('gacha-coins').innerText = `Z-COINS: ${zombieCoins}`;
+                
+                let rand = Math.random();
+                let rarity = 'Normal';
+                if (rand < 0.05) rarity = 'Legend';
+                else if (rand < 0.15) rarity = 'Epic';
+                else if (rand < 0.40) rarity = 'Rare';
+
+                let candidates = SKINS.filter(s => s.rarity === rarity);
+                let skin = candidates[Math.floor(Math.random() * candidates.length)];
+                
+                let isDuplicate = false;
+                if (!ownedSkins.includes(skin.id)) {
+                    ownedSkins.push(skin.id);
+                } else {
+                    isDuplicate = true;
+                }
+                saveCoinAndSkinData(); 
+                document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
+
+                const resDiv = document.getElementById('gacha-result');
+                let colorHex = `#${skin.color.toString(16).padStart(6,'0')}`;
+                if(skin.rarity === 'Legend') {
+                    resDiv.innerHTML = `<span class="legend-text">Got ${skin.rarity} Skin for ${skin.type.toUpperCase()}!</span><br>${isDuplicate ? '(Duplicate)' : 'NEW!!'}`;
+                } else {
+                    let colStr = (skin.rarity === 'Epic') ? '#ff00ff' : (skin.rarity === 'Rare' ? '#00ffff' : '#ffffff');
+                    resDiv.innerHTML = `<span style="color:${colStr}">Got ${skin.rarity} Skin for ${skin.type.toUpperCase()}!</span> <span style="color:${colorHex}">■</span><br>${isDuplicate ? '<span style="font-size:20px; color:#aaa;">(Duplicate)</span>' : '<span style="color:yellow;">NEW!!</span>'}`;
+                }
+            }
+        };
+
+        // --- スキン変更UI処理 ---
+        let currentPreviewWeapon = 'pistol';
+        let selectedSkinId = null;
+
+        document.getElementById('open-skin-menu').onclick = () => {
+            document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('skin-ui').style.display = 'flex';
+            isSkinMenuOpen = true;
+            updateSkinList();
+        };
+
+        document.getElementById('close-skin-menu').onclick = () => {
+            document.getElementById('skin-ui').style.display = 'none';
+            document.getElementById('title-screen').style.display = 'flex';
+            isSkinMenuOpen = false;
+            applySkin(previewModels[currentPreviewWeapon], getSkinById(equippedSkins[currentPreviewWeapon])); // プレビューを戻す
+        };
+
+        document.getElementById('skin-weapon-select').onchange = (e) => {
+            currentPreviewWeapon = e.target.value;
+            updateSkinList();
+        };
+
+        function updateSkinList() {
+            const listDiv = document.getElementById('skin-list');
+            listDiv.innerHTML = '';
+            
+            const defBtn = document.createElement('button');
+            defBtn.className = 'menu-btn'; defBtn.style.width = '100%'; defBtn.style.margin = '2px 0'; defBtn.style.fontSize = '14px';
+            defBtn.innerText = 'Default (Owned)';
+            // 装備中ならボタンを黄緑色に
+            if (equippedSkins[currentPreviewWeapon] === null) {
+                defBtn.style.background = '#4a7c00';
+                defBtn.style.border = '2px solid #aaff00';
+                defBtn.style.color = '#aaff00';
+            }
+            defBtn.onclick = () => {
+                selectedSkinId = null;
+                applySkin(previewModels[currentPreviewWeapon], null);
+                document.getElementById('skin-preview-info').innerText = 'Default';
+                document.getElementById('skin-preview-info').className = '';
+                document.getElementById('skin-preview-info').style.color = '#fff';
+                checkEquipButton(null);
+            };
+            listDiv.appendChild(defBtn);
+
+            const weaponSkins = SKINS.filter(s => s.type === currentPreviewWeapon);
+            weaponSkins.forEach(skin => {
+                const btn = document.createElement('button');
+                const isOwned = ownedSkins.includes(skin.id);
+                const isEquipped = equippedSkins[currentPreviewWeapon] === skin.id;
+                btn.className = 'menu-btn'; btn.style.width = '100%'; btn.style.margin = '2px 0'; btn.style.fontSize = '14px';
+                btn.innerText = `${skin.rarity} Skin ${isOwned ? '(Owned)' : '(Locked)'}`;
+                
+                if (isEquipped) {
+                    // 装備中は黄緑でハイライト（レアリティ色より優先）
+                    btn.style.background = '#4a7c00';
+                    btn.style.border = '2px solid #aaff00';
+                    btn.style.color = '#aaff00';
+                } else {
+                    if (skin.rarity === 'Legend') { btn.style.color = 'gold'; btn.style.fontWeight = 'bold'; }
+                    else if (skin.rarity === 'Epic') btn.style.color = '#ffaa00';
+                    else if (skin.rarity === 'Rare') btn.style.color = '#00ffff';
+                }
+
+                btn.onclick = () => {
+                    selectedSkinId = skin.id;
+                    applySkin(previewModels[currentPreviewWeapon], skin);
+                    const info = document.getElementById('skin-preview-info');
+                    info.innerText = `${skin.rarity} Skin`;
+                    info.className = (skin.rarity === 'Legend') ? 'legend-text' : '';
+                    if(skin.rarity !== 'Legend') info.style.color = btn.style.color || '#fff';
+                    checkEquipButton(skin.id);
+                };
+                listDiv.appendChild(btn);
+            });
+
+            ['pistol', 'knife', 'compass'].forEach(w => { previewModels[w].visible = (w === currentPreviewWeapon); });
+            
+            selectedSkinId = equippedSkins[currentPreviewWeapon];
+            applySkin(previewModels[currentPreviewWeapon], getSkinById(selectedSkinId));
+            checkEquipButton(selectedSkinId);
+            const info = document.getElementById('skin-preview-info');
+            if(selectedSkinId) {
+                const sk = getSkinById(selectedSkinId);
+                info.innerText = sk.rarity + ' Skin';
+                info.className = (sk.rarity === 'Legend') ? 'legend-text' : '';
+                info.style.color = (sk.rarity === 'Epic') ? '#ffaa00' : ((sk.rarity === 'Rare') ? '#00ffff' : '#fff');
+            } else {
+                info.innerText = 'Default'; info.className = ''; info.style.color = '#fff';
+            }
+        }
+
+        function checkEquipButton(skinId) {
+            const btn = document.getElementById('equip-skin');
+            if (skinId === null || ownedSkins.includes(skinId)) {
+                btn.disabled = false;
+                btn.innerText = (equippedSkins[currentPreviewWeapon] === skinId) ? 'EQUIPPED' : 'EQUIP';
+                btn.style.background = (equippedSkins[currentPreviewWeapon] === skinId) ? '#444' : '#004400';
+            } else {
+                btn.disabled = true;
+                btn.innerText = 'NOT OWNED';
+                btn.style.background = '#444';
+            }
+        }
+
+        document.getElementById('equip-skin').onclick = () => {
+            if (selectedSkinId === null || ownedSkins.includes(selectedSkinId)) {
+                equippedSkins[currentPreviewWeapon] = selectedSkinId;
+                let targetGroup = (currentPreviewWeapon === 'pistol') ? pistolGroup : ((currentPreviewWeapon === 'knife') ? knifeGroup : compassGroup);
+                applySkin(targetGroup, getSkinById(selectedSkinId));
+                saveCoinAndSkinData();
+                updateSkinList(); // 黄緑ハイライトを即時更新
+            }
         };
 
         function startNextLevel() {
@@ -901,16 +1316,17 @@
             if (level > highestLevel) {
                 highestLevel = level;
                 localStorage.setItem('infiniteTowerHighLevel', highestLevel);
+                submitRanking(getUsername(), highestLevel); // 最高レベル更新時にランキング送信
             }
             zombiesKilledInLevel = 0;
             updateZombieCounter();
             document.getElementById('level-display').innerText = `LEVEL: ${level}`;
             createMaze();
             camera.position.set(- (mazeSize * wallUnit / 2) + wallUnit, 1.6, - (mazeSize * wallUnit / 2) + wallUnit);
-            for (let i = 0; i < zombies.length; i++) zombieGroup.remove(zombies[i].group);
+            zombies.forEach(z => zombieGroup.remove(z.group));
             zombies.length = 0;
             for(let i=0; i<ZOMBIES_PER_LEVEL; i++) zombies.push(new Zombie());
-            for (let i = 0; i < kits.length; i++) scene.remove(kits[i]);
+            kits.forEach(k => scene.remove(k));
             kits.length = 0;
             for(let i=0; i<3; i++) spawnFirstAidKit();
         }
@@ -929,7 +1345,7 @@
         }
 
         setInterval(() => {
-            if (isGameOver || isTitleActive) return;
+            if (isGameOver || isTitleActive || isSkinMenuOpen || isGachaOpen) return;
             
             if (isShopOpen) {
                 shopTimeLeft--;
@@ -944,9 +1360,36 @@
             }
         }, 1000);
 
+        let _animFrame = 0;
         function animate() {
             requestAnimationFrame(animate);
-            if (isGameOver || isTitleActive || isShopOpen) {
+            _animFrame++;
+
+            // --- Legendスキンの虹色アニメーション更新（3フレームに1回）---
+            if (_animFrame % 3 === 0) {
+                const time = Date.now() * 0.002;
+                const rainbowColor = new THREE.Color().setHSL((time % 1.0), 1.0, 0.5);
+                const updateRainbow = (group) => {
+                    group.traverse(child => {
+                        if (child.isMesh && child.userData.isLegendary && child.material) {
+                            child.material.color.copy(rainbowColor);
+                            if (child.material.emissive) child.material.emissive.copy(rainbowColor);
+                        }
+                    });
+                };
+                updateRainbow(pistolGroup); updateRainbow(knifeGroup); updateRainbow(compassGroup);
+                updateRainbow(previewModels.pistol); updateRainbow(previewModels.knife); updateRainbow(previewModels.compass);
+            }
+
+            // --- スキンプレビュー画面の描画 ---
+            if (isSkinMenuOpen) {
+                previewModels[currentPreviewWeapon].rotation.y += 0.01;
+                renderer.autoClear = true;
+                renderer.render(skinScene, skinCamera);
+                return;
+            }
+
+            if (isGameOver || isTitleActive || isShopOpen || isGachaOpen) {
                 if (footstepSound.isPlaying) footstepSound.pause();
                 return;
             }
@@ -955,21 +1398,19 @@
                 for(let i=0; i<ZOMBIES_PER_LEVEL; i++) zombies.push(new Zombie());
             }
             
-            for (let i = 0; i < zombies.length; i++) zombies[i].update(camera.position);
+            zombies.forEach(z => z.update(camera.position));
 
             for (let i = shotLines.length - 1; i >= 0; i--) { if (!shotLines[i].update()) shotLines.splice(i, 1); }
             for (let i = particles.length - 1; i >= 0; i--) { if (!particles[i].update()) particles.splice(i, 1); }
 
-            const now = Date.now();
-            for (let i = kits.length - 1; i >= 0; i--) {
-                const kit = kits[i];
-                kit.rotation.y += 0.02; kit.position.y = 0.5 + Math.sin(now * 0.002) * 0.1;
+            kits.forEach((kit, index) => {
+                kit.rotation.y += 0.02; kit.position.y = 0.5 + Math.sin(Date.now() * 0.002) * 0.1;
                 if (!hasFirstAidKit && camera.position.distanceTo(kit.position) < 1.5) {
                     hasFirstAidKit = true; if (helpSound.buffer) { helpSound.stop(); helpSound.play(); }
-                    scene.remove(kit); kits.splice(i, 1);
+                    scene.remove(kit); kits.splice(index, 1);
                     const slot = document.getElementById('kit-slot'); slot.innerText = ""; slot.classList.add('filled');
                 }
-            }
+            });
 
             if (damageFlash > 0) {
                 damageFlash -= 0.02; document.getElementById('damage-overlay').style.backgroundColor = `rgba(255, 0, 0, ${damageFlash})`;
@@ -983,12 +1424,11 @@
                 shakeIntensity *= 0.9; if (shakeIntensity < 0.001) shakeIntensity = 0; 
             }
 
-            // オブジェクトの使い回しでベクトル生成を抑制
             let pTarget = (currentWeapon === 'pistol') ? (isReloading ? reloadHidePos : (isAds ? adsPos : normalPos)) : weaponHidePos;
             pistolGroup.position.lerp(pTarget, 0.15); 
             pistolGroup.rotation.x = THREE.MathUtils.lerp(pistolGroup.rotation.x, 0, 0.2);
 
-            let kTargetPos = (currentWeapon === 'knife') ? _v1.copy(normalPos) : _v1.copy(weaponHidePos);
+            let kTargetPos = (currentWeapon === 'knife') ? normalPos.clone() : weaponHidePos.clone();
             let kTargetRotZ = 0, kTargetRotY = 0;
             if (knifeSwingTimer > 0) {
                 knifeSwingTimer--; const p = (20 - knifeSwingTimer) / 20;
@@ -1013,11 +1453,9 @@
                 const s = (currentWeapon === 'knife') ? 0.08 : (isAds ? 0.03 : 0.06);
                 const gx = (mazeSize-2) * wallUnit - (mazeSize * wallUnit / 2);
                 const gz = (mazeSize-2) * wallUnit - (mazeSize * wallUnit / 2);
-                const dxGoal = camera.position.x - gx;
-                const dzGoal = camera.position.z - gz;
-                const distToGoalSq = dxGoal*dxGoal + dzGoal*dzGoal;
+                const distToGoal = Math.sqrt((camera.position.x - gx)**2 + (camera.position.z - gz)**2);
                 
-                if(distToGoalSq < 2.25) {
+                if(distToGoal < 1.5) {
                     nextLevelTrigger();
                 } else {
                     const oldPosX = camera.position.x;
@@ -1034,7 +1472,8 @@
                         camera.position.x = oldPosX;
                     }
                     
-                    camera.position.set(camera.position.x, 1.6, newPosZ);
+                    const currentPosX = camera.position.x;
+                    camera.position.set(currentPosX, 1.6, newPosZ);
                     if (checkCollision(camera.position) || checkPlayerZombieCollision(camera.position)) {
                         camera.position.z = oldPosZ;
                     }
@@ -1072,9 +1511,15 @@
         function endGame(msg) {
             isGameOver = true; controls.unlock();
             if (footstepSound.isPlaying) footstepSound.stop();
+            // ゾンビコインとスキンデータだけ保持、gameOverフラグでCONTINUEを無効化
+            const keepData = { zombieCoins, ownedSkins, equippedSkins, gameOver: true };
             localStorage.removeItem('infiniteTowerSave');
+            localStorage.setItem('infiniteTowerSave', JSON.stringify(keepData));
+            // ランキングに送信
+            const uname = getUsername();
+            submitRanking(uname, level);
             const el = document.getElementById('game-msg');
-            el.innerHTML = msg + `<br>Final Level: ${level}<br>Money: ${score}$<br><small>Refresh to Restart</small>`;
+            el.innerHTML = msg + `<br>Final Level: ${level}<br>Money: ${score}$<br><small style="color:#00ff00;">Z-COINS: ${zombieCoins} (保持されます)</small><br><small style="color:#ff88ff;">Ranking submitted as: ${uname}</small><br><br><button onclick="location.reload()" style="padding:12px 30px; font-size:20px; background:#222; color:white; border:2px solid white; cursor:pointer; margin-top:10px;">TITLE に戻る</button>`;
             el.style.display = 'block';
         }
         animate();
@@ -1082,6 +1527,8 @@
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
+            skinCamera.aspect = window.innerWidth / window.innerHeight;
+            skinCamera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
