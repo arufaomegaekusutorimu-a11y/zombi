@@ -32,6 +32,8 @@
         #hp-container { display: flex; gap: 4px; margin-top: 5px; }
         .hp-segment { width: 18px; height: 20px; background: #f00; border: 1px solid #fff; }
         .hp-segment.empty { background: #333; }
+        .hp-segment.bonus { background: #2288ff; }
+        .hp-segment.bonus.empty { background: #112244; }
         
         #damage-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -110,6 +112,38 @@
             color: white; font-family: sans-serif; flex-direction: row;
         }
         .legend-text { background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); -webkit-background-clip: text; color: transparent; font-weight: bold; }
+
+        /* 設定UI */
+        #settings-ui {
+            display: none; position: absolute; width: 100%; height: 100%;
+            background: radial-gradient(circle, #1a1a2a, #000);
+            z-index: 600; color: white; font-family: sans-serif;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .settings-panel {
+            width: 420px; max-width: 90vw;
+            border: 3px solid #88aaff; border-radius: 16px;
+            padding: 36px 40px; background: rgba(255,255,255,0.05);
+            text-align: center;
+        }
+        .settings-panel h2 { font-size: 32px; color: #88aaff; margin: 0 0 30px; text-shadow: 0 0 12px #4466ff; }
+        .setting-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 18px 0; gap: 16px;
+        }
+        .setting-label { font-size: 17px; color: #ccc; text-align: left; flex: 1; }
+        .setting-value { font-size: 20px; color: #88aaff; font-weight: bold; min-width: 50px; text-align: right; }
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            width: 180px; height: 6px; background: #444; border-radius: 3px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%; background: #88aaff; cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%; background: #88aaff; cursor: pointer; border: none;
+        }
     </style>
 </head>
 <body>
@@ -119,23 +153,43 @@
         <div id="title-coin-display" style="font-size: 22px; margin-bottom: 10px; color: #00ff00; text-shadow: 0 0 10px rgba(0,255,0,0.5);">Z-COINS: 0</div>
         <button class="menu-btn" id="start-new-game">NEW GAME</button>
         <button class="menu-btn" id="load-game" disabled>CONTINUE</button>
-        <button class="menu-btn" id="open-skill-shop" style="border-color:#88ff88; color:#88ff88;">&#9889; SKILL SHOP</button>
+        <button class="menu-btn" id="open-settings" style="border-color:#88aaff; color:#88aaff;">⚙ SETTINGS</button>
+        <button class="menu-btn" id="open-skill-shop" style="border-color:#88ff88; color:#88ff88;">⚡ SKILL SHOP</button>
         <button class="menu-btn" id="open-gacha" style="border-color:#ffcc00; color:#ffcc00;">SKIN GACHA</button>
         <button class="menu-btn" id="open-skin-menu" style="border-color:#00ffff; color:#00ffff;">CHANGE SKIN</button>
     </div>
 
+    <!-- 設定UI -->
+    <div id="settings-ui">
+        <div class="settings-panel">
+            <h2>⚙ SETTINGS</h2>
+            <div class="setting-row">
+                <span class="setting-label">🖱 エイム感度</span>
+                <input type="range" id="sens-slider" min="1" max="200" step="1" value="100">
+                <span class="setting-value" id="sens-value">1.0</span>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">🔃 Y軸感度 (上下)</span>
+                <input type="range" id="sens-y-slider" min="1" max="200" step="1" value="100">
+                <span class="setting-value" id="sens-y-value">1.0</span>
+            </div>
+            <p style="font-size:12px; color:#888; margin: 20px 0 8px;">設定は自動的に保存されます</p>
+            <button class="menu-btn" id="close-settings" style="width:100%; margin-top:10px;">BACK</button>
+        </div>
+    </div>
+
     <!-- スキルショップUI -->
     <div id="skill-shop-ui" style="display:none; position:absolute; width:100%; height:100%; background:radial-gradient(circle, #1a2a1a, #000); z-index:600; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:flex-start; padding:30px 20px; box-sizing:border-box; overflow-y:auto;">
-        <h2 style="font-size:36px; color:#88ff88; text-shadow:0 0 15px #44ff44; margin-bottom:5px;">&#9889; SKILL SHOP</h2>
+        <h2 style="font-size:36px; color:#88ff88; text-shadow:0 0 15px #44ff44; margin-bottom:5px;">⚡ SKILL SHOP</h2>
         <p id="skill-shop-coins" style="font-size:20px; color:#00ff00; margin-bottom:20px;">Z-COINS: 0</p>
         <div id="skill-list" style="width:600px; max-width:95vw; display:flex; flex-direction:column; gap:10px;"></div>
-        <button class="menu-btn" id="open-skill-set" style="margin-top:20px; border-color:#88ff88; color:#88ff88;">&#9889; スキルセット</button>
+        <button class="menu-btn" id="open-skill-set" style="margin-top:20px; border-color:#88ff88; color:#88ff88;">⚡ スキルセット</button>
         <button class="menu-btn" id="close-skill-shop" style="margin-top:10px;">BACK</button>
     </div>
 
     <!-- スキルセット選択UI（タイトルから直接開く） -->
     <div id="skill-select-ui" style="display:none; position:absolute; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1100; color:white; font-family:sans-serif; flex-direction:column; align-items:center; justify-content:center;">
-        <h2 style="font-size:32px; color:#88ff88; margin-bottom:8px;">&#9889; スキルセット</h2>
+        <h2 style="font-size:32px; color:#88ff88; margin-bottom:8px;">⚡ スキルセット</h2>
         <p style="color:#aaa; margin-bottom:5px; font-size:14px;">セットするスキルを1つ選んでください</p>
         <p id="skill-active-display" style="color:#88ff88; font-size:14px; margin-bottom:20px;">現在: なし</p>
         <div id="skill-select-list" style="display:flex; flex-direction:column; gap:10px; width:500px; max-width:90vw;"></div>
@@ -171,6 +225,7 @@
     </div>
 
     <div id="damage-overlay"></div>
+    <div id="adrena-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99;opacity:0;background:radial-gradient(ellipse at center, transparent 40%, rgba(255,220,0,0.45) 100%);transition:opacity 0.3s;"></div>
     <div id="crosshair"></div>
     <div id="ui-container">
         HP
@@ -236,6 +291,44 @@
         import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
+        // ========== 感度設定 ==========
+        let aimSensitivity = parseFloat(localStorage.getItem('aimSensitivity') || '1.0');
+        let aimSensitivityY = parseFloat(localStorage.getItem('aimSensitivityY') || '1.0');
+
+        // スライダー初期化
+        const sensSlider = document.getElementById('sens-slider');
+        const sensYSlider = document.getElementById('sens-y-slider');
+        const sensValueEl = document.getElementById('sens-value');
+        const sensYValueEl = document.getElementById('sens-y-value');
+
+        function sensitivityToSlider(v) { return Math.round(v * 100); }
+        function sliderToSensitivity(v) { return v / 100; }
+
+        sensSlider.value = sensitivityToSlider(aimSensitivity);
+        sensYSlider.value = sensitivityToSlider(aimSensitivityY);
+        sensValueEl.textContent = aimSensitivity.toFixed(2);
+        sensYValueEl.textContent = aimSensitivityY.toFixed(2);
+
+        sensSlider.addEventListener('input', () => {
+            aimSensitivity = sliderToSensitivity(parseInt(sensSlider.value));
+            sensValueEl.textContent = aimSensitivity.toFixed(2);
+            localStorage.setItem('aimSensitivity', aimSensitivity.toString());
+        });
+        sensYSlider.addEventListener('input', () => {
+            aimSensitivityY = sliderToSensitivity(parseInt(sensYSlider.value));
+            sensYValueEl.textContent = aimSensitivityY.toFixed(2);
+            localStorage.setItem('aimSensitivityY', aimSensitivityY.toString());
+        });
+
+        document.getElementById('open-settings').onclick = () => {
+            document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('settings-ui').style.display = 'flex';
+        };
+        document.getElementById('close-settings').onclick = () => {
+            document.getElementById('settings-ui').style.display = 'none';
+            document.getElementById('title-screen').style.display = 'flex';
+        };
+
         // --- スキンデータ生成 (全50パターン) ---
         const SKINS = [];
         let skinIdCounter = 1;
@@ -247,7 +340,6 @@
             for(let i=0; i<epicCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Epic', color: 0x222222, metalness: 0.2, roughness: 0.8, emissive: true, emissiveColor: colorsEpic[i%colorsEpic.length], emissiveIntensity: 2.0 });
             for(let i=0; i<legendCnt; i++) SKINS.push({ id: skinIdCounter++, type: type, rarity: 'Legend', color: 0xffffff, metalness: 1.0, roughness: 0.1, emissive: true, emissiveColor: 0xffffff, emissiveIntensity: 1.0, isRainbow: true });
         };
-        // 17 + 17 + 16 = 50パターン
         generateSkinsForWeapon('pistol', 8, 5, 3, 1);
         generateSkinsForWeapon('knife', 8, 5, 3, 1);
         generateSkinsForWeapon('compass', 7, 5, 3, 1);
@@ -261,7 +353,6 @@
             { id: 'gunman',  name: 'ガンマン',            cost: 100, desc: 'リロード速度が50%短縮される',                          icon: '🔫' },
             { id: 'adrena',  name: 'アドレナリン',        cost: 100, desc: 'HP10以下で移動速度とリロード速度が2倍になる',            icon: '⚡' },
             { id: 'treasure',name: 'トレジャーハンター',  cost: 100, desc: 'ゾンビを倒した時のZコイン獲得量が2倍になる',             icon: '💰' },
-            { id: 'medic',   name: 'メディック',          cost: 100, desc: '救急箱使用時の回復量が10→20にアップする',               icon: '💊' },
             { id: 'search',  name: 'サーチ',              cost: 100, desc: 'コンパスマップにゾンビと回復アイテムの位置が表示される', icon: '🔍' },
         ];
 
@@ -269,8 +360,8 @@
         let playerHP = 50, score = 0, zombieCoins = 0, level = 1, totalAmmo = 18, hasFirstAidKit = false, timeLeft = 90, currentAmmo = 6;
         let ownedSkins = [];
         let equippedSkins = { pistol: null, knife: null, compass: null };
-        let ownedSkills = [];      // 所持スキルIDリスト
-        let activeSkill = null;    // 現レベルでセットされているスキルID
+        let ownedSkills = [];
+        let activeSkill = null;
         const savedDataStr = localStorage.getItem('infiniteTowerSave');
         if (savedDataStr) {
             const data = JSON.parse(savedDataStr);
@@ -279,18 +370,17 @@
             equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
             ownedSkills = data.ownedSkills || [];
         }
-        // タイトル画面のZコイン表示を初期化
         document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
 
         function saveGameData() {
             const saveData = {
                 playerHP, score, zombieCoins, level, totalAmmo, hasFirstAidKit, timeLeft, currentAmmo,
-                ownedSkins, equippedSkins, ownedSkills
+                ownedSkins, equippedSkins, ownedSkills, activeSkill,
+                zombiesKilledInLevel, inGame: true
             };
             localStorage.setItem('infiniteTowerSave', JSON.stringify(saveData));
         }
 
-        // ガチャ・スキン変更時専用：コインとスキンデータのみ保存（ゲーム変数を上書きしない）
         function saveCoinAndSkinData() {
             const existing = localStorage.getItem('infiniteTowerSave');
             const base = existing ? JSON.parse(existing) : {};
@@ -298,6 +388,7 @@
             base.ownedSkins = ownedSkins;
             base.equippedSkins = equippedSkins;
             base.ownedSkills = ownedSkills;
+            base.activeSkill = activeSkill;
             localStorage.setItem('infiniteTowerSave', JSON.stringify(base));
         }
 
@@ -309,17 +400,15 @@
         renderer.shadowMap.enabled = false;
         document.body.appendChild(renderer.domElement);
 
-        // --- スキンプレビュー専用シーン・レンダラー（skin-ui内canvasに描画） ---
+        // --- スキンプレビュー専用シーン・レンダラー ---
         const skinScene = new THREE.Scene();
         skinScene.background = new THREE.Color(0x1a1a2e);
-        // ライト
         const skinLight = new THREE.DirectionalLight(0xffffff, 2.5);
         skinLight.position.set(5, 8, 5);
         const skinLight2 = new THREE.DirectionalLight(0x8888ff, 1.0);
         skinLight2.position.set(-5, -2, 3);
         skinScene.add(skinLight, skinLight2, new THREE.AmbientLight(0xffffff, 1.5));
 
-        // 専用レンダラーはopen-skin-menu時に初期化（canvasが存在してから）
         let skinRenderer = null;
         let skinCamera = null;
         function initSkinRenderer() {
@@ -336,11 +425,11 @@
         }
 
         const previewModels = { pistol: new THREE.Group(), knife: new THREE.Group(), compass: new THREE.Group() };
-        // previewModelsはskinSceneにのみ追加（gameシーンには追加しない）
         skinScene.add(previewModels.pistol, previewModels.knife, previewModels.compass);
 
         let isGameOver = false;
         let isShopOpen = false; 
+        let zombiesSpawned = false; // 初回スポーン済みフラグ
         let isTitleActive = true;
         let isGachaOpen = false;
         let isSkinMenuOpen = false;
@@ -614,12 +703,11 @@
             update(playerPos) {
                 if (this.isDead || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return; 
                 const dist = this.group.position.distanceTo(new THREE.Vector3(playerPos.x, 0, playerPos.z));
-                // raycastは近距離のみ実行して処理を軽量化
                 let canSeePlayer = false;
                 if (dist < 12) {
                     this._rayCooldown = (this._rayCooldown || 0) - 1;
                     if (this._rayCooldown <= 0) {
-                        this._rayCooldown = 3; // 3フレームに1回raycast
+                        this._rayCooldown = 3;
                         const dir = new THREE.Vector3(playerPos.x - this.group.position.x, 0, playerPos.z - this.group.position.z).normalize();
                         const rayToPlayer = new THREE.Raycaster(this.group.position.clone().add(new THREE.Vector3(0,1.2,0)), dir);
                         const intersects = rayToPlayer.intersectObjects(walls);
@@ -684,7 +772,10 @@
                 return false;
             }
             attack() {
-                this.attackCooldown = 60; playerHP -= 10; damageFlash = 0.5; shakeIntensity = 0.15; updateHPUI();
+                this.attackCooldown = 60; playerHP -= 10; damageFlash = 0.5;
+                // 【バグ修正】shakeIntensityはカメラ位置のみに影響させ、PointerLockControlsの回転には影響させない
+                shakeIntensity = 0.15;
+                updateHPUI();
             }
             takeDamage(amount, isHeadshot = false, hitPos = null) {
                 this.hp -= amount;
@@ -703,7 +794,7 @@
                 updateZombieCounter();
                 document.getElementById('score-display').innerText = `$: ${score}`;
                 document.getElementById('coin-display').innerText = `Z-COINS: ${zombieCoins}`;
-                saveGameData(); // コイン増減をセーブ
+                saveGameData();
                 this.group.rotation.x = -Math.PI / 2;
                 this.group.position.y = 0.1;
                 setTimeout(() => { 
@@ -729,15 +820,14 @@
 
         let currentWeapon = 'pistol'; 
         let knifeSwingTimer = 0;
+        let knifeInspectTimer = 0;
+        const KNIFE_INSPECT_DURATION = 50; // フレーム数（約1.7秒）
         let isCompassActive = false;
 
-        // --- スキン適用関数 ---
         function applySkin(modelGroup, skinData) {
             modelGroup.traverse(child => {
                 if (child.isMesh && child.name !== "Hand") {
-                    // 元のマテリアルを保存（MeshStandardMaterialとして）
                     if (!child.userData.originalStdMaterial) {
-                        // FBXのマテリアル（MeshPhong等）をMeshStandardMaterialに変換して保存
                         const stdMat = new THREE.MeshStandardMaterial();
                         const src = Array.isArray(child.material) ? child.material[0] : child.material;
                         if (src) {
@@ -790,10 +880,8 @@
             }
         }
 
-        // --- オーラエフェクト管理 ---
         const auraParticles = [];
 
-        // プレビュー用オーラ（skinScene内、大スケール）
         function createAuraEffect(parentGroup, rarity) {
             parentGroup.children.filter(c => c.userData.isAura).forEach(c => parentGroup.remove(c));
             if (rarity !== 'Epic' && rarity !== 'Legend') return;
@@ -818,7 +906,6 @@
             }
         }
 
-        // ゲーム中武器用オーラ（gunSwayContainer空間、小スケール）
         function createGameAuraEffect(parentGroup, rarity) {
             parentGroup.children.filter(c => c.userData.isAura).forEach(c => parentGroup.remove(c));
             if (rarity !== 'Epic' && rarity !== 'Legend') return;
@@ -889,7 +976,6 @@
         muzzlePoint.position.set(0, 0.15, -0.45);
         pistolGroup.add(muzzlePoint);
 
-        // プレビューモデルはFBXを別途ロードして確実に中央表示
         loader.load('Pistol_1.fbx', (fbx) => {
             fbx.scale.set(0.004, 0.004, 0.004);
             fbx.rotation.y = Math.PI / 2;
@@ -982,8 +1068,49 @@
             }
         }
 
+        // ========== PointerLockControls & カスタム感度 ==========
+        // PointerLockControlsのデフォルトのmousemoveハンドラを無効化して
+        // カスタム感度を適用するためにcontrols内部のイベントをオーバーライドする
         const controls = new PointerLockControls(camera, document.body);
+
+        // PointerLockControlsが内部で使っているmousemoveリスナを感度対応で置き換える
+        // controls._onMouseMove を差し替える（Three.js 0.160対応）
+        const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+        const PI_2 = Math.PI / 2;
+
+        function onMouseMoveCustom(event) {
+            if (!controls.isLocked) return;
+
+            const movementX = event.movementX || 0;
+            const movementY = event.movementY || 0;
+
+            // 異常値フィルタ：1フレームで極端に大きいマウス移動は無視
+            // （視点バグの主要原因：ページ復帰時などに巨大なmovementが発生する）
+            const MAX_MOVEMENT = 200;
+            if (Math.abs(movementX) > MAX_MOVEMENT || Math.abs(movementY) > MAX_MOVEMENT) return;
+
+            _euler.setFromQuaternion(camera.quaternion);
+            _euler.y -= movementX * 0.002 * aimSensitivity;
+            _euler.x -= movementY * 0.002 * aimSensitivityY;
+            _euler.x = Math.max(-PI_2, Math.min(PI_2, _euler.x));
+            camera.quaternion.setFromEuler(_euler);
+        }
+
+        // PointerLockControlsの内部イベントを無効化してカスタムハンドラに置き換え
+        // controls.connect() が内部でdocumentにイベントを追加しているため、
+        // 同じターゲットにcaptureフェーズで先に捕捉してstopImmediatePropagationする
+        document.addEventListener('mousemove', (e) => {
+            if (!controls.isLocked) return;
+            e.stopImmediatePropagation(); // PointerLockControlsのハンドラをキャンセル
+            onMouseMoveCustom(e);
+        }, true); // capture: true で先に実行
+
         document.body.addEventListener('click', () => { if(!isGameOver && !isShopOpen && !isTitleActive && !isGachaOpen && !isSkinMenuOpen) controls.lock(); });
+
+        // PointerLockが解除されたときにマウス入力をクリア
+        controls.addEventListener('unlock', () => {
+            // ロック解除時：次回ロック時に変な初期値が残らないよう何もしない
+        });
 
         window.addEventListener('mousedown', (e) => {
             if (!controls.isLocked || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return;
@@ -999,12 +1126,20 @@
                 }
             }
             if (e.button === 2 && currentWeapon === 'pistol') isAds = true;
+            if (e.button === 2 && currentWeapon === 'knife' && knifeSwingTimer <= 0 && knifeInspectTimer <= 0) {
+                knifeInspectTimer = KNIFE_INSPECT_DURATION;
+                if (knifeAttackSound.buffer) { knifeAttackSound.stop(); knifeAttackSound.play(); }
+            }
         });
         window.addEventListener('mouseup', (e) => { if (e.button === 2) isAds = false; });
+        window.addEventListener('contextmenu', (e) => e.preventDefault());
 
         function switchWeapon() {
             if (isReloading || isShopOpen || isTitleActive || isSkinMenuOpen || isGachaOpen) return;
             currentWeapon = (currentWeapon === 'pistol' ? 'knife' : 'pistol');
+            // 切り替え時にナイフのインスペクトを即キャンセル
+            knifeInspectTimer = 0;
+            knifeGroup.rotation.set(0, 0, 0);
             if (currentWeapon === 'pistol') { if (weaponSwapGunSound.buffer) { weaponSwapGunSound.stop(); weaponSwapGunSound.play(); } }
             else { if (weaponSwapKnifeSound.buffer) { weaponSwapKnifeSound.stop(); weaponSwapKnifeSound.play(); } }
         }
@@ -1047,7 +1182,6 @@
             if (isReloading || currentAmmo === 6 || totalAmmo <= 0 || isShopOpen) return;
             isReloading = true;
             if (reloadSound.buffer) { reloadSound.stop(); reloadSound.play(); }
-            // スキル効果：リロード時間
             const hasGunman = activeSkill === 'gunman';
             const hasAdrena = activeSkill === 'adrena' && playerHP <= 10;
             let reloadTime = 1500;
@@ -1060,7 +1194,7 @@
         }
 
         function useFirstAidKit() {
-            const hasTough = ownedSkills.includes('tough');
+            const hasTough = activeSkill === 'tough';
             const maxHP = hasTough ? 80 : 50;
             if (hasFirstAidKit && playerHP < maxHP && !isShopOpen) {
                 const healAmt = activeSkill === 'medic' ? 20 : 10;
@@ -1077,8 +1211,21 @@
         window.addEventListener('keydown', (e) => keys[e.code] = true);
         window.addEventListener('keyup', (e) => keys[e.code] = false);
 
+        // 【バグ修正】mx/myはgunSwayのみに使用。
+        // 視点制御はPointerLockControlsのカスタムハンドラに完全委譲。
         let mx = 0, my = 0;
-        window.addEventListener('mousemove', (e) => { if (controls.isLocked) { mx = e.movementX; my = e.movementY; } });
+        window.addEventListener('mousemove', (e) => {
+            if (controls.isLocked) {
+                const MAX_MOVEMENT = 200;
+                if (Math.abs(e.movementX) <= MAX_MOVEMENT && Math.abs(e.movementY) <= MAX_MOVEMENT) {
+                    mx = e.movementX;
+                    my = e.movementY;
+                }
+            }
+        });
+
+        // PointerLockが取得されたタイミングでmx/myをリセット
+        controls.addEventListener('lock', () => { mx = 0; my = 0; });
 
         const miniMapCanvas = document.getElementById('minimap');
         const miniMapCtx = miniMapCanvas.getContext('2d');
@@ -1104,7 +1251,6 @@
             miniMapCtx.beginPath();
             miniMapCtx.arc(gx * scale + offsetX, gz * scale + offsetZ, 8, 0, Math.PI * 2);
             miniMapCtx.fill();
-            // サーチスキル：ゾンビ位置（赤い菱形）
             if (activeSkill === 'search') {
                 zombies.forEach(z => {
                     if (z.isDead) return;
@@ -1116,7 +1262,6 @@
                     miniMapCtx.lineTo(zx, zz + 7); miniMapCtx.lineTo(zx - 5, zz);
                     miniMapCtx.closePath(); miniMapCtx.fill();
                 });
-                // サーチスキル：救急箱位置（緑十字）
                 kits.forEach(k => {
                     const kx = k.position.x * scale + offsetX;
                     const kz = k.position.z * scale + offsetZ;
@@ -1197,6 +1342,7 @@
 
         document.getElementById('exit-shop').onclick = () => { closeShop(); };
         document.getElementById('save-quit').onclick = () => {
+            // inGame:true のままセーブ → リロード後CONTINUEで途中から再開できる
             saveGameData();
             location.reload();
         };
@@ -1207,6 +1353,7 @@
         let highestLevel = localStorage.getItem('infiniteTowerHighLevel') || 1;
         document.getElementById('high-level-display').innerText = `HIGHEST LEVEL: ${highestLevel}`;
 
+        // セーブデータがあればCONTINUEを有効化
         if(localStorage.getItem('infiniteTowerSave')) {
             const _checkData = JSON.parse(localStorage.getItem('infiniteTowerSave'));
             if (!_checkData.gameOver) {
@@ -1215,7 +1362,15 @@
         }
 
         startBtn.onclick = () => {
+            // 新規ゲーム開始時は古いセーブのinGameフラグをクリア
+            const raw = localStorage.getItem('infiniteTowerSave');
+            if (raw) {
+                const d = JSON.parse(raw);
+                d.inGame = false;
+                localStorage.setItem('infiniteTowerSave', JSON.stringify(d));
+            }
             isTitleActive = false;
+            zombiesSpawned = false;
             document.getElementById('title-screen').style.display = 'none';
             applyPassiveSkills();
             updateHPUI();
@@ -1224,27 +1379,51 @@
 
         loadBtn.onclick = () => {
             const data = JSON.parse(localStorage.getItem('infiniteTowerSave'));
-            playerHP = data.playerHP; score = data.score; zombieCoins = data.zombieCoins || 0;
-            level = data.level; totalAmmo = data.totalAmmo; hasFirstAidKit = data.hasFirstAidKit;
-            timeLeft = data.timeLeft; currentAmmo = data.currentAmmo;
-            ownedSkins = data.ownedSkins || []; equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
+            playerHP = data.playerHP || 50;
+            score = data.score || 0;
+            zombieCoins = data.zombieCoins || 0;
+            level = data.level || 1;
+            totalAmmo = data.totalAmmo || 18;
+            hasFirstAidKit = data.hasFirstAidKit || false;
+            timeLeft = data.timeLeft || 90;
+            currentAmmo = data.currentAmmo || 6;
+            zombiesKilledInLevel = data.zombiesKilledInLevel || 0;
+            ownedSkins = data.ownedSkins || [];
+            equippedSkins = data.equippedSkins || { pistol: null, knife: null, compass: null };
             ownedSkills = data.ownedSkills || [];
+            activeSkill = data.activeSkill || null;
             
             tryApplyEquippedSkins();
-            applyPassiveSkills(); // タフスキルなどを反映
+            _prevHasTough = false; // リセットしてapplyPassiveSkillsで正しく処理させる
+            applyPassiveSkills();
 
             isTitleActive = false;
             document.getElementById('title-screen').style.display = 'none';
             document.getElementById('level-display').innerText = `LEVEL: ${level}`;
             document.getElementById('coin-display').innerText = `Z-COINS: ${zombieCoins}`;
+            document.getElementById('score-display').innerText = `$: ${score}`;
+            updateZombieCounter();
             
             if(hasFirstAidKit) {
                 const slot = document.getElementById('kit-slot'); slot.innerText = ""; slot.classList.add('filled');
             }
-            updateHPUI(); updateUI(); openShop();
+            updateHPUI(); updateUI();
+
+            // inGame:true のセーブ（途中セーブ）の場合はそのままゲームへ、
+            // それ以外（ショップ経由セーブ）はショップを開く
+            if (data.inGame) {
+                // 途中再開：ゾンビをスポーンしてゲーム画面へ直接
+                zombies.forEach(z => zombieGroup.remove(z.group));
+                zombies.length = 0;
+                for(let i=0; i<ZOMBIES_PER_LEVEL; i++) zombies.push(new Zombie());
+                zombiesSpawned = true;
+            } else {
+                // ショップからのコンティニュー
+                zombiesSpawned = false;
+                openShop();
+            }
         };
 
-        // --- ガチャUI処理 ---
         document.getElementById('open-gacha').onclick = () => {
             document.getElementById('title-screen').style.display = 'none';
             document.getElementById('gacha-ui').style.display = 'flex';
@@ -1259,7 +1438,6 @@
             isGachaOpen = false;
         };
 
-        // ===== スキルショップ =====
         function renderSkillShop() {
             document.getElementById('skill-shop-coins').innerText = `Z-COINS: ${zombieCoins}`;
             const listDiv = document.getElementById('skill-list');
@@ -1304,40 +1482,59 @@
             document.getElementById('title-coin-display').innerText = `Z-COINS: ${zombieCoins}`;
         };
 
-        // ===== スキル効果適用（パッシブ） =====
         const BASE_MAX_HP = 50;
         const BASE_HP_SEGMENTS = 5;
+        let _prevHasTough = false; // タフの前回状態を記録
         function applyPassiveSkills() {
-            // タフ：HP最大値+30
-            const hasTough = ownedSkills.includes('tough');
+            // タフスキルは「アクティブ」の時のみHP+30
+            const hasTough = activeSkill === 'tough';
             const maxHP = hasTough ? 80 : 50;
-            // HPセグメント数を動的に更新
             const hpContainer = document.getElementById('hp-container');
             const segCount = hasTough ? 8 : 5;
+
+            // タフON → ボーナス30HP付与
+            if (hasTough && !_prevHasTough) {
+                playerHP = Math.min(playerHP + 30, 80);
+            }
+            // タフOFF → ボーナス分を失う（50超えていたらクランプ）
+            if (!hasTough && _prevHasTough) {
+                playerHP = Math.min(playerHP, 50);
+            }
+            _prevHasTough = hasTough;
+
             hpContainer.innerHTML = '';
             for (let i = 0; i < segCount; i++) {
                 const d = document.createElement('div');
-                d.className = 'hp-segment';
+                // 追加分の3マス（インデックス5,6,7）は青色クラスを付与
+                d.className = (hasTough && i >= 5) ? 'hp-segment bonus' : 'hp-segment';
                 hpContainer.appendChild(d);
             }
-            // 現在のHPがmax超えてたらクランプ
             if (playerHP > maxHP) playerHP = maxHP;
+            if (playerHP < 0) playerHP = 0;
             updateHPUI();
         }
 
-        // HP更新もタフを考慮
         function updateHPUI() {
-            const hasTough = ownedSkills.includes('tough');
+            const hasTough = activeSkill === 'tough';
             const maxHP = hasTough ? 80 : 50;
             const segments = document.getElementsByClassName('hp-segment');
-            const hpPerSeg = maxHP / segments.length;
-            const activeSegments = Math.ceil(playerHP / hpPerSeg);
-            for (let i = 0; i < segments.length; i++) {
-                segments[i].classList.toggle('empty', i >= activeSegments);
+            const count = segments.length; // 5 or 8
+            // 各セグメントが担当するHP範囲を計算
+            // セグメント i は HP: (maxHP/count)*i ～ (maxHP/count)*(i+1) の範囲
+            const hpPerSeg = maxHP / count; // 10HP/セグメント固定
+            for (let i = 0; i < count; i++) {
+                // セグメントiに対応するHP下限（このセグメントが点灯するために必要なHP）
+                const threshold = hpPerSeg * i; // i=0→0, i=1→10, i=2→20 ...
+                segments[i].classList.toggle('empty', playerHP <= threshold);
+            }
+            // アドレナリンスキル発動中（HP10以下）は画面端を黄色くする
+            const isAdrenaActive = activeSkill === 'adrena' && playerHP <= 10;
+            const adrenaOverlay = document.getElementById('adrena-overlay');
+            if (adrenaOverlay) {
+                adrenaOverlay.style.opacity = isAdrenaActive ? '1' : '0';
             }
         }
 
-        // ===== スキルセット選択（タイトル画面から直接開く） =====
         function openSkillSelect() {
             if (ownedSkills.length === 0) {
                 alert('スキルを所持していません。\nまずスキルショップでスキルを購入してください。');
@@ -1360,22 +1557,18 @@
                 btn.onclick = () => {
                     activeSkill = sid;
                     saveCoinAndSkinData();
-                    openSkillSelect(); // 再描画
+                    openSkillSelect();
                 };
                 listDiv.appendChild(btn);
             });
         }
 
-        document.getElementById('open-skill-set').onclick = () => {
-            openSkillSelect();
-        };
-
+        document.getElementById('open-skill-set').onclick = () => { openSkillSelect(); };
         document.getElementById('skill-select-none').onclick = () => {
             activeSkill = null;
             saveCoinAndSkinData();
-            openSkillSelect(); // 再描画
+            openSkillSelect();
         };
-
         document.getElementById('close-skill-select').onclick = () => {
             document.getElementById('skill-select-ui').style.display = 'none';
         };
@@ -1414,7 +1607,6 @@
             }
         };
 
-        // --- スキン変更UI処理 ---
         let currentPreviewWeapon = 'pistol';
         let selectedSkinId = null;
 
@@ -1422,7 +1614,6 @@
             document.getElementById('title-screen').style.display = 'none';
             document.getElementById('skin-ui').style.display = 'flex';
             isSkinMenuOpen = true;
-            // canvasサイズを正しくセット
             setTimeout(() => {
                 initSkinRenderer();
                 const canvas = document.getElementById('skin-preview-canvas');
@@ -1441,7 +1632,7 @@
             document.getElementById('skin-ui').style.display = 'none';
             document.getElementById('title-screen').style.display = 'flex';
             isSkinMenuOpen = false;
-            applySkin(previewModels[currentPreviewWeapon], getSkinById(equippedSkins[currentPreviewWeapon])); // プレビューを戻す
+            applySkin(previewModels[currentPreviewWeapon], getSkinById(equippedSkins[currentPreviewWeapon]));
         };
 
         document.getElementById('skin-weapon-select').onchange = (e) => {
@@ -1456,7 +1647,6 @@
             const defBtn = document.createElement('button');
             defBtn.className = 'menu-btn'; defBtn.style.width = '100%'; defBtn.style.margin = '2px 0'; defBtn.style.fontSize = '14px';
             defBtn.innerText = 'Default (Owned)';
-            // 装備中ならボタンを黄緑色に
             if (equippedSkins[currentPreviewWeapon] === null) {
                 defBtn.style.background = '#4a7c00';
                 defBtn.style.border = '2px solid #aaff00';
@@ -1482,7 +1672,6 @@
                 btn.innerText = `${skin.rarity} Skin ${isOwned ? '(Owned)' : '(Locked)'}`;
                 
                 if (isEquipped) {
-                    // 装備中は黄緑でハイライト（レアリティ色より優先）
                     btn.style.background = '#4a7c00';
                     btn.style.border = '2px solid #aaff00';
                     btn.style.color = '#aaff00';
@@ -1509,7 +1698,6 @@
             
             selectedSkinId = equippedSkins[currentPreviewWeapon];
             applySkin(previewModels[currentPreviewWeapon], getSkinById(selectedSkinId));
-            // 現在装備中スキンのオーラを表示
             const currentSk = getSkinById(selectedSkinId);
             createAuraEffect(previewModels[currentPreviewWeapon], currentSk ? currentSk.rarity : 'Normal');
             checkEquipButton(selectedSkinId);
@@ -1556,6 +1744,7 @@
                 localStorage.setItem('infiniteTowerHighLevel', highestLevel);
             }
             zombiesKilledInLevel = 0;
+            zombiesSpawned = true; // startNextLevelで明示スポーンするのでフラグON
             updateZombieCounter();
             document.getElementById('level-display').innerText = `LEVEL: ${level}`;
             createMaze();
@@ -1594,6 +1783,7 @@
                 const s = (timeLeft % 60).toString().padStart(2, '0');
                 document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
                 if (timeLeft <= 0) endGame("TIME UP");
+                else saveGameData(); // ゲーム中は毎秒セーブ（リロード対策）
             }
         }, 1000);
 
@@ -1602,10 +1792,8 @@
             requestAnimationFrame(animate);
             _animFrame++;
 
-            // --- Legendスキンの虹色アニメーション更新（3フレームに1回・周期をゆっくりに）---
             if (_animFrame % 3 === 0) {
                 const time = Date.now();
-                // * 0.00015 で約7秒で1周（元の0.002から約13倍遅く）
                 const rainbowColor = new THREE.Color().setHSL((time * 0.00015) % 1.0, 1.0, 0.5);
                 const updateRainbow = (group) => {
                     group.traverse(child => {
@@ -1619,12 +1807,10 @@
                 updateRainbow(previewModels.pistol); updateRainbow(previewModels.knife); updateRainbow(previewModels.compass);
             }
 
-            // --- オーラエフェクト更新（スキンプレビュー中）---
             if (isSkinMenuOpen) {
                 updateAuraEffect(previewModels[currentPreviewWeapon], Date.now());
             }
 
-            // --- スキンプレビュー画面の描画 ---
             if (isSkinMenuOpen) {
                 previewModels[currentPreviewWeapon].rotation.y += 0.01;
                 if (skinRenderer && skinCamera) {
@@ -1637,7 +1823,8 @@
                 if (footstepSound.isPlaying) footstepSound.pause();
                 return;
             }
-            if (zombies.length === 0 && zombiesKilledInLevel === 0) {
+            if (zombies.length === 0 && !zombiesSpawned && !isGameOver) {
+                zombiesSpawned = true;
                 for(let i=0; i<ZOMBIES_PER_LEVEL; i++) zombies.push(new Zombie());
             }
             
@@ -1661,10 +1848,33 @@
                 healFlash -= 0.02; document.getElementById('damage-overlay').style.backgroundColor = `rgba(0, 255, 0, ${healFlash})`;
             }
 
+            // アドレナリンスキル発動時のオーバーレイ更新（パルスアニメーション）
+            const adrenaOverlay = document.getElementById('adrena-overlay');
+            if (adrenaOverlay) {
+                const isAdrenaActive = activeSkill === 'adrena' && playerHP <= 10 && !isGameOver;
+                if (isAdrenaActive) {
+                    const pulse = 0.55 + Math.sin(Date.now() * 0.004) * 0.2;
+                    adrenaOverlay.style.opacity = pulse.toString();
+                } else {
+                    adrenaOverlay.style.opacity = '0';
+                }
+            }
+
+            // 【バグ修正】shakeIntensityはカメラ位置（XZ平面のみ）にだけ適用し、Y軸回転には触れない
+            // カメラのY位置に適用するとPointerLockControlsが意図しない上下視点ズレを起こすことがある
             if (shakeIntensity > 0) {
-                camera.position.x += (Math.random() - 0.5) * shakeIntensity;
-                camera.position.y += (Math.random() - 0.5) * shakeIntensity;
-                shakeIntensity *= 0.9; if (shakeIntensity < 0.001) shakeIntensity = 0; 
+                const shakeX = (Math.random() - 0.5) * shakeIntensity;
+                const shakeZ = (Math.random() - 0.5) * shakeIntensity;
+                // 揺れ後に壁にめり込まないかチェック
+                const shakePos = camera.position.clone();
+                shakePos.x += shakeX;
+                shakePos.z += shakeZ;
+                if (!checkCollision(shakePos, 0.35)) {
+                    camera.position.x += shakeX;
+                    camera.position.z += shakeZ;
+                }
+                shakeIntensity *= 0.85;
+                if (shakeIntensity < 0.001) shakeIntensity = 0;
             }
 
             let pTarget = (currentWeapon === 'pistol') ? (isReloading ? reloadHidePos : (isAds ? adsPos : normalPos)) : weaponHidePos;
@@ -1672,20 +1882,25 @@
             pistolGroup.rotation.x = THREE.MathUtils.lerp(pistolGroup.rotation.x, 0, 0.2);
 
             let kTargetPos = (currentWeapon === 'knife') ? normalPos.clone() : weaponHidePos.clone();
-            let kTargetRotZ = 0, kTargetRotY = 0;
+            let kTargetRotZ = 0, kTargetRotY = 0, kTargetRotX = 0;
             if (knifeSwingTimer > 0) {
                 knifeSwingTimer--; const p = (20 - knifeSwingTimer) / 20;
                 if (p < 0.3) { kTargetRotZ = Math.PI / 2; kTargetPos.x -= 0.1; }
                 else { kTargetRotZ = Math.PI / 2; kTargetRotY = -Math.sin((p-0.3) * Math.PI) * 1.5; kTargetPos.x += Math.sin((p-0.3) * Math.PI) * 0.5; kTargetPos.z -= 0.2; }
+            } else if (knifeInspectTimer > 0) {
+                knifeInspectTimer--;
+                // 攻撃と同じrotZ方向に少し左に傾けるだけ
+                kTargetRotZ = Math.PI / 2;
+                kTargetPos.x -= 0.08;
             }
             knifeGroup.position.lerp(kTargetPos, 0.2);
             knifeGroup.rotation.z = THREE.MathUtils.lerp(knifeGroup.rotation.z, kTargetRotZ, 0.2);
             knifeGroup.rotation.y = THREE.MathUtils.lerp(knifeGroup.rotation.y, kTargetRotY, 0.2);
+            knifeGroup.rotation.x = THREE.MathUtils.lerp(knifeGroup.rotation.x, kTargetRotX, 0.2);
 
             let cTargetPos = isCompassActive ? compassNormalPos : compassHidePos;
             compassGroup.position.lerp(cTargetPos, 0.15);
 
-            // --- ゲーム中オーラエフェクト更新 ---
             const _t = Date.now();
             updateGameAuraEffect(pistolGroup, _t);
             updateGameAuraEffect(knifeGroup, _t);
@@ -1694,12 +1909,12 @@
             document.getElementById('crosshair').style.display = (isAds || isReloading || isCompassActive) ? 'none' : 'block';
             document.getElementById('ammo-ui').style.opacity = (currentWeapon === 'pistol' && !isCompassActive ? '1' : '0');
 
+            // gunSwayはmx/myをそのまま使用（視点バグとは切り離し済み）
             gunSwayContainer.position.x += (-mx * 0.0003 - gunSwayContainer.position.x) * 0.1;
             gunSwayContainer.position.y += (my * 0.0003 - gunSwayContainer.position.y) * 0.1;
             mx *= 0.9; my *= 0.9;
 
             if (controls.isLocked) {
-                // --- スキル効果：移動速度計算 ---
                 const hasAdrena = activeSkill === 'adrena' && playerHP <= 10;
                 const hasDash = activeSkill === 'dash';
                 let baseSpeed = isAds ? 0.03 : 0.06;
@@ -1724,7 +1939,6 @@
                     if (keys['KeyA']) controls.moveRight(-s);
                     if (keys['KeyD']) controls.moveRight(s);
 
-                    // ワープバグ防止：1フレームの移動量が大きすぎたら元に戻す
                     const maxMove = 0.5;
                     if (Math.abs(camera.position.x - oldPosX) > maxMove || Math.abs(camera.position.z - oldPosZ) > maxMove) {
                         camera.position.set(oldPosX, oldPosY, oldPosZ);
@@ -1777,7 +1991,7 @@
         function endGame(msg) {
             isGameOver = true; controls.unlock();
             if (footstepSound.isPlaying) footstepSound.stop();
-            const keepData = { zombieCoins, ownedSkins, equippedSkins, gameOver: true };
+            const keepData = { zombieCoins, ownedSkins, equippedSkins, gameOver: true, inGame: false };
             localStorage.removeItem('infiniteTowerSave');
             localStorage.setItem('infiniteTowerSave', JSON.stringify(keepData));
             const el = document.getElementById('game-msg');
@@ -1804,3 +2018,4 @@
     </script>
 </body>
 </html>
+
